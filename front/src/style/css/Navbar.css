@@ -1,0 +1,18 @@
+.Navbar {
+  display: flex;
+  justify-content: space-between;
+  background: rgb(0, 0, 0);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(255, 255, 255, 0.1) 100%);
+  color: black;
+}
+.Navbar .Logo {
+  margin: 5px 10px;
+}
+.Navbar .PageList {
+  display: flex;
+  justify-content: space-around;
+  margin: 5px 10px;
+}
+.Navbar .PageList .Entry {
+  margin: 0px 10px;
+}/*# sourceMappingURL=Navbar.css.map */

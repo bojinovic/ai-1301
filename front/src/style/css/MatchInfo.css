@@ -1,0 +1,20 @@
+.MatchInfo {
+  margin: 0 auto;
+}
+.MatchInfo .Meta {
+  display: flex;
+  justify-content: space-between;
+}
+.MatchInfo .Meta .T {
+  width: 100px;
+  text-align: center;
+}
+.MatchInfo .Meta .Crest {
+  margin: 0 auto;
+  width: 50px;
+  height: 50px;
+}
+.MatchInfo .Score {
+  display: flex;
+  justify-content: center;
+}/*# sourceMappingURL=MatchInfo.css.map */

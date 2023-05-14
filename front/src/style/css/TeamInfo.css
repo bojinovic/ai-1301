@@ -1,0 +1,29 @@
+.TeamInfo {
+  margin: 0 auto;
+  justify-content: space-between;
+}
+.TeamInfo .Lignup {
+  border-collapse: collapse;
+  background: rgb(2, 0, 36);
+  background: linear-gradient(203deg, rgba(2, 0, 36, 0.1) 0%, rgba(0, 0, 0, 0.1) 39%, rgba(0, 0, 0, 0) 93%);
+}
+.TeamInfo .Lignup .Head {
+  background: rgb(63, 94, 251);
+  background: radial-gradient(circle, rgb(63, 94, 251) 0%, rgb(70, 245, 252) 100%);
+  padding: 3px;
+  color: white;
+}
+.TeamInfo .Lignup tr {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+}
+.TeamInfo .Lignup tr .Name {
+  width: 150px;
+  text-align: left;
+}
+.TeamInfo .Lignup tr td,
+.TeamInfo .Lignup tr th {
+  width: 50px;
+  padding: 2px 3px;
+}/*# sourceMappingURL=TeamInfo.css.map */

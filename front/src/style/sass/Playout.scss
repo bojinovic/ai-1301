@@ -1,0 +1,11 @@
+.Playout {
+  display: flex;
+  flex-direction: column;
+  max-width: 1000px;
+  min-width: 700px;
+  margin: 0 auto;
+  .TeamInfosWrapper {
+    display: flex;
+    justify-content: space-between;
+  }
+}
