@@ -22,11 +22,35 @@ describe("Game", function () {
     it("Should Playout a Move", async function () {
       const { game, owner } = await loadFixture(deploy);
 
-      const result = await game.playout(0, 0);
+      const result = await game.playout(0, 3);
 
-      console.log({ result });
+      // console.log({ result });
+
+      for (let i = 0; i < 5; ++i) {
+        const step = result.moveProgression[i];
+        // console.log({ step });
+      }
 
       expect(1).to.equal(1);
+    });
+    it("Should player 0 fromt team 1 should not move", async function () {
+      const { game, owner } = await loadFixture(deploy);
+
+      const { move: firstMove } = await game.playout(0, 0);
+
+      for (let id = 3; id < 10; ++id) {
+        const { move: lastMove, moveProgression: lastMoveProgression } =
+          await game.playout(0, id);
+        for (let j = 0; j < 5; ++j)
+          console.log({ t1X: lastMoveProgression[j].team1_x_positions });
+      }
+
+      expect(lastMove.team1_x_positions[0]).to.equal(
+        firstMove.team1_x_positions[0]
+      );
+      expect(lastMove.team1_y_positions[0]).to.equal(
+        firstMove.team1_y_positions[0]
+      );
     });
   });
 });

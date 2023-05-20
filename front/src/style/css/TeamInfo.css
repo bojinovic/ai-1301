@@ -4,11 +4,9 @@
 }
 .TeamInfo .Lignup {
   border-collapse: collapse;
-  background: rgb(2, 0, 36);
-  background: linear-gradient(203deg, rgba(2, 0, 36, 0.1) 0%, rgba(0, 0, 0, 0.1) 39%, rgba(0, 0, 0, 0) 93%);
 }
 .TeamInfo .Lignup .Head {
-  background: rgba(255, 0, 0, 0.8);
+  background: rgba(255, 0, 0, 0.7);
   padding: 3px;
   color: white;
 }
