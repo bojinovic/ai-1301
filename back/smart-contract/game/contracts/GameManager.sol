@@ -97,8 +97,6 @@ contract GameManager {
 
     function commitmentTick(uint matchId) public {
 
-        _initMoveInStorage(matchId, matchIdToMoveId[matchId]);
-
         require(matchCounter > matchId, "ERR: Match with that ID has not yet been created!");
 
         require(matches[matchId].initFinished == true, "ERR: The match is not fully initialized!");
@@ -172,6 +170,7 @@ contract GameManager {
 
     function stateUpdate(uint matchId) public {
 
+        _initMoveInStorage(matchId, matchIdToMoveId[matchId]+1);
 
         (bool success, ) = address(logic).delegatecall(
             abi.encodeWithSignature("update(uint256)", matchId)
@@ -235,7 +234,7 @@ contract GameManager {
         move.state.team1_x_positions = new uint[](10);
         move.state.team1_y_positions = new uint[](10);
         move.state.team2_x_positions = new uint[](10);
-        move.state.team1_y_positions = new uint[](10);
+        move.state.team2_y_positions = new uint[](10);
 
         move.state.pass_ball_x_positions = new uint[](7);
         move.state.pass_ball_y_positions = new uint[](7);

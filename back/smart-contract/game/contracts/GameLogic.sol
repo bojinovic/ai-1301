@@ -34,42 +34,51 @@ contract GameLogic {
 
         uint matchId
 
-    ) public {
+    ) public view returns (
+        Types.MoveInfo memory nextMove,
+        Types.MoveInfo[] memory progression 
+    ) {
         uint currMoveId = matchIdToMoveId[matchId];
         uint nextMoveId = currMoveId + 1;
 
         Types.MoveInfo memory currMove =_copyMoveFromStorage(matchId, currMoveId);
 
-        Types.MoveInfo memory nextMove = _copyMoveFromStorage(matchId, nextMoveId);
+        nextMove = _copyMoveFromStorage(matchId, nextMoveId);
+
+        //create progression stage
+        progression = new Types.MoveInfo[](5);
+        // for(uint i = 0; i < 5; ++i){ 
+        //     progression[i] = _createNewMove(); 
+        //     progression[i] = _copyMoveFromMemory(nextMove);
+
+        // }
+        // progression[0] = _copyMoveFromMemory(currMove);
+
 
         for(uint stepId = 1; stepId <= constants.PLAYER_STEPS_PER_MOVE(); ++stepId){
-            
 
-            //advance team1 positions
-            for(uint playerId = 0; playerId < 10; ++playerId){
+            for(uint teamId = 1; teamId < 3; ++teamId){
 
+                //advance team positions
+                for(uint playerId = 0; playerId < 10; ++playerId){
 
-                _advancePlayerPosition(currMove, nextMove, 1, playerId, stepId);
-                
+                    _advancePlayerPosition(currMove, nextMove, teamId, playerId, stepId);
+                    
+                }
             }
-            //advance team2 positions
-            for(uint playerId = 0; playerId < 10; ++playerId){
 
-            }
+            progression[stepId - 1] = _copyMoveFromMemory(nextMove);
+
         }
 
 
-
-
-
-
-
+        console.log("nextMove[] %s", nextMove.state.team1_x_positions[0]);
+        console.log("progression[] %s", progression[2].state.team1_x_positions[0]);
 
         nextMove.state.shoot = !currMove.state.shoot;
-
     }
 
-    function createNewMove() internal returns (Types.MoveInfo memory newMove) {
+    function _createNewMove() internal view returns (Types.MoveInfo memory newMove) {
         bytes memory b;
         Types.CommitmentInfo memory commitment1 = Types.CommitmentInfo(b); 
         Types.CommitmentInfo memory commitment2 = Types.CommitmentInfo(b); 
@@ -119,19 +128,66 @@ contract GameLogic {
 
 
 
-    function _copyMoveFromStorage(uint matchId, uint moveId) internal returns (Types.MoveInfo memory newMove) {
-        newMove = createNewMove();
+    function _copyMoveFromStorage(uint matchId, uint moveId) internal view returns (Types.MoveInfo memory dst) {
+        Types.MoveInfo storage src = matchProgression[matchId][moveId];
+        dst = _createNewMove();
         for(uint i = 0; i < 10; ++i){
-            newMove.state.team1_x_positions[i] = matchProgression[matchId][moveId].state.team1_x_positions[i];
-            newMove.state.team1_y_positions[i] = matchProgression[matchId][moveId].state.team1_y_positions[i];
+            for(uint j = 0; j < 2; ++j){
+                dst.reveals[j].team_x_positions[i] = src.reveals[j].team_x_positions[i];
+                dst.reveals[j].team_y_positions[i] = src.reveals[j].team_y_positions[i];
+            }
+            dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
+            dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
+            dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
+            dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
         }
     }
 
-    function _advancePlayerPosition(Types.MoveInfo memory currMove, Types.MoveInfo memory nextMove, uint teamId, uint playerId, uint stepId) internal {
+    function _pasteToStorage(uint matchId, uint moveId) internal returns (Types.MoveInfo memory dst) {
+        Types.MoveInfo storage src = matchProgression[matchId][moveId];
+        dst = _createNewMove();
+        for(uint i = 0; i < 10; ++i){
+            for(uint j = 0; j < 2; ++j){
+                dst.reveals[j].team_x_positions[i] = src.reveals[j].team_x_positions[i];
+                dst.reveals[j].team_y_positions[i] = src.reveals[j].team_y_positions[i];
+            }
+            dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
+            dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
+            dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
+            dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
+        }
+    }
+
+
+    function _copyMoveFromMemory(Types.MoveInfo memory src) internal view returns (Types.MoveInfo memory dst) {
+        dst = _createNewMove();
+        for(uint i = 0; i < 10; ++i){
+            for(uint j = 0; j < 2; ++j){
+                dst.reveals[j].team_x_positions[i] = src.reveals[j].team_x_positions[i];
+                dst.reveals[j].team_y_positions[i] = src.reveals[j].team_y_positions[i];
+            }
+            dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
+            dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
+            dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
+            dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
+        }
+    }
+
+    function _copyPositions(Types.MoveInfo memory dst, Types.MoveInfo memory src) internal view returns (Types.MoveInfo memory) {
+        for(uint i = 0; i < 10; ++i){
+            dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
+            dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
+            dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
+            dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
+        }
+
+        return dst;
+    }
+
+    function _advancePlayerPosition(Types.MoveInfo memory currMove, Types.MoveInfo memory nextMove, uint teamId, uint playerId, uint stepId) internal view {
         //where the player ultimately wants to go
         uint wantedX = currMove.reveals[teamId-1].team_x_positions[playerId];
         uint wantedY = currMove.reveals[teamId-1].team_y_positions[playerId];
-        console.log("XXXXX");
 
         uint currX; uint currY;
 
@@ -140,8 +196,10 @@ contract GameLogic {
             currX = nextMove.state.team1_x_positions[playerId];
             currY = nextMove.state.team1_y_positions[playerId];
 
+            console.log("wantedX ::: %s", wantedX);
+            console.log("currX ::: %s", currX);
+
             if(currX == wantedX && wantedX == currY){
-                console.log("123123123");
 
                 return;
             }
@@ -166,9 +224,6 @@ contract GameLogic {
             } 
         }
 
-        console.log("asdasdasdd");
-
-
         uint newX; uint newY;
 
         int diffX = int(wantedX) - int(currX);
@@ -190,8 +245,6 @@ contract GameLogic {
         }else{
             newY = wantedY;
         }
-
-        console.log("t1 X: %s", newX);
 
 
         if(teamId == 1){
