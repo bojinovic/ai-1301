@@ -16,7 +16,7 @@ contract GameManager {
 
     Constants public constants;
 
-    GameLogic public logic;
+    address public logic;
 
     uint public matchCounter;
     mapping(uint => Types.MatchInfo) public matches;
@@ -31,9 +31,9 @@ contract GameManager {
         _;
     }
     
-    constructor() {
+    constructor(address _logic) {
         constants = new Constants();
-        logic = new GameLogic();
+        logic = _logic;
 
     }
 
@@ -139,11 +139,11 @@ contract GameManager {
         require(IChainlinkFunctionConsumer(matches[matchId].team2_revealChainlinkFunctionConsumer).dataReady(), "ERR: Team2 Reveal not fullfiled!");
 
         bytes memory team1_revealData = IChainlinkFunctionConsumer(matches[matchId].team1_revealChainlinkFunctionConsumer).copyData();
-        updateRevealForTeam(matchId, 1, team1_revealData);
+        _updateRevealForTeam(matchId, 1, team1_revealData);
             
 
         bytes memory team2_revealData = IChainlinkFunctionConsumer(matches[matchId].team2_revealChainlinkFunctionConsumer).copyData();
-        updateRevealForTeam(matchId, 2, team2_revealData);
+        _updateRevealForTeam(matchId, 2, team2_revealData);
           
     }
 
@@ -151,7 +151,7 @@ contract GameManager {
         return abi.decode(rawData, (bytes32));
     }
 
-    function updateRevealForTeam(uint matchId, uint teamId, bytes memory rawData) public {
+    function _updateRevealForTeam(uint matchId, uint teamId, bytes memory rawData) public {
 
         uint moveId = matchIdToMoveId[matchId];
         
@@ -166,28 +166,10 @@ contract GameManager {
         for(uint i = 0; i < 10; ++i){
             reveal.team_x_positions[i] = rawData[i];
         }
-    }
-
-    function stateUpdate(uint matchId) public {
 
         _initMoveInStorage(matchId, matchIdToMoveId[matchId]+1);
-
-        (bool success, ) = address(logic).delegatecall(
-            abi.encodeWithSignature("update(uint256)", matchId)
-        );
-
-        require(success, "ERR: Delegate call failed!");
-
-        matchIdToMoveId[matchId] += 1;
-
-
-
     }
 
-
-    function dispute() public {
-        //TBD
-    }
 
     function _initMoveInStorage(uint matchId, uint moveId) internal {
         Types.MoveInfo storage move = matchProgression[matchId][moveId];

@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import "./Constants.sol";
 import "./Types.sol";
+import "./GameManager.sol";
 import "./interfaces/IChainlinkFunctionConsumer.sol";
 
 
@@ -15,7 +16,7 @@ contract GameLogic {
 
     Constants public constants;
 
-    GameLogic public logic;
+    address public manager;
 
     uint public matchCounter;
     mapping(uint => Types.MatchInfo) public matches;
@@ -25,18 +26,111 @@ contract GameLogic {
     mapping(uint => uint) matchIdToVRFRequestId;
     mapping(uint => uint) VRFRequestIdToFullfilmentValue;
 
+    modifier matchNotFullyInitialized (uint matchId) {
+        require(matches[matchId].initFinished == false, "ERR: The match has already been initialized!");
+        _;
+    }
     
     constructor() {
-      
+        constants = new Constants();
+        manager = address(new GameManager(address(this)));
     }
 
-    function update(
+
+    function commitments(uint matchId, uint moveId) public view returns (Types.CommitmentInfo[] memory) {
+        return matchProgression[matchId][moveId].commitments;
+    }
+    function reveals(uint matchId, uint moveId) public view returns (Types.RevealInfo[] memory) {
+        return matchProgression[matchId][moveId].reveals;
+    }
+
+
+
+    function createMatch(
+        address team1_commitmentChainlinkFunctionConsumer, 
+        address team1_revealChainlinkFunctionConsumer
+    ) public {
+
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("createMatch(address,address)", team1_commitmentChainlinkFunctionConsumer, team1_revealChainlinkFunctionConsumer));
+
+        require(success, "ERR: createMatch Delegate call failed!");
+
+    }
+
+    function joinMatch(
+        uint matchId,
+        address team2_commitmentChainlinkFunctionConsumer, 
+        address team2_revealChainlinkFunctionConsumer
+    ) public {
+
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("joinMatch(uint256,address,address)", matchId, team2_commitmentChainlinkFunctionConsumer, team2_revealChainlinkFunctionConsumer));
+
+        require(success, "ERR: joinMatch Delegate call failed!");
+    }
+
+
+    function completeInitialization(uint matchId) public matchNotFullyInitialized(matchId) {
+
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("completeInitialization(uint256)", matchId));
+
+        require(success, "ERR: completeInitialization Delegate call failed!");
+    }
+
+    function commitmentTick(uint matchId) public {
+
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("commitmentTick(uint256)", matchId));
+
+        require(success, "ERR: commitmentTick Delegate call failed!");
+    }
+
+    function updateCommitmentInfo(uint matchId) public {
+
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("updateCommitmentInfo(uint256)", matchId));
+
+        require(success, "ERR: updateCommitmentInfo Delegate call failed!");
+    }
+
+    function revealTick(uint matchId) public {
+
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("revealTick(uint256)", matchId));
+
+        require(success, "ERR: revealTick Delegate call failed!");
+    }
+
+    function updateRevealInfo(uint matchId) public {
+       
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("updateRevealInfo(uint256)", matchId));
+
+        require(success, "ERR: updateRevealInfo Delegate call failed!");
+    }
+
+
+    function stateUpdate(uint matchId) public {
+
+        (Types.MoveInfo memory nextMove,Types.MoveInfo[5] memory progression) = playout(matchId);
+
+        // _pasteToStorage(matchId, matchIdToMoveId[matchId], nextMove);
+
+        matchIdToMoveId[matchId] += 1;
+
+    }
+
+
+
+    function playout(
 
         uint matchId
 
     ) public view returns (
         Types.MoveInfo memory nextMove,
-        Types.MoveInfo[] memory progression 
+        Types.MoveInfo[5] memory progression 
     ) {
         uint currMoveId = matchIdToMoveId[matchId];
         uint nextMoveId = currMoveId + 1;
@@ -45,15 +139,7 @@ contract GameLogic {
 
         nextMove = _copyMoveFromStorage(matchId, nextMoveId);
 
-        //create progression stage
-        progression = new Types.MoveInfo[](5);
-        // for(uint i = 0; i < 5; ++i){ 
-        //     progression[i] = _createNewMove(); 
-        //     progression[i] = _copyMoveFromMemory(nextMove);
-
-        // }
-        // progression[0] = _copyMoveFromMemory(currMove);
-
+        // progression
 
         for(uint stepId = 1; stepId <= constants.PLAYER_STEPS_PER_MOVE(); ++stepId){
 
@@ -68,14 +154,11 @@ contract GameLogic {
             }
 
             progression[stepId - 1] = _copyMoveFromMemory(nextMove);
-
         }
-
 
         console.log("nextMove[] %s", nextMove.state.team1_x_positions[0]);
         console.log("progression[] %s", progression[2].state.team1_x_positions[0]);
 
-        nextMove.state.shoot = !currMove.state.shoot;
     }
 
     function _createNewMove() internal view returns (Types.MoveInfo memory newMove) {
@@ -143,9 +226,8 @@ contract GameLogic {
         }
     }
 
-    function _pasteToStorage(uint matchId, uint moveId) internal returns (Types.MoveInfo memory dst) {
-        Types.MoveInfo storage src = matchProgression[matchId][moveId];
-        dst = _createNewMove();
+    function _pasteToStorage(uint matchId, uint moveId, Types.MoveInfo memory src) internal {
+        Types.MoveInfo storage dst = matchProgression[matchId][moveId];
         for(uint i = 0; i < 10; ++i){
             for(uint j = 0; j < 2; ++j){
                 dst.reveals[j].team_x_positions[i] = src.reveals[j].team_x_positions[i];
@@ -188,16 +270,21 @@ contract GameLogic {
         //where the player ultimately wants to go
         uint wantedX = currMove.reveals[teamId-1].team_x_positions[playerId];
         uint wantedY = currMove.reveals[teamId-1].team_y_positions[playerId];
+        
+        uint startX; uint startY;
 
         uint currX; uint currY;
 
         if(teamId == 1){
 
+            startX = currMove.state.team1_x_positions[playerId];
+            startY = currMove.state.team1_y_positions[playerId];
+
             currX = nextMove.state.team1_x_positions[playerId];
             currY = nextMove.state.team1_y_positions[playerId];
 
-            console.log("wantedX ::: %s", wantedX);
-            console.log("currX ::: %s", currX);
+            // console.log("wantedX ::: %s", wantedX);
+            // console.log("currX ::: %s", currX);
 
             if(currX == wantedX && wantedX == currY){
 
@@ -210,6 +297,10 @@ contract GameLogic {
                 return;
             } 
         } else {
+
+            startX = currMove.state.team2_x_positions[playerId];
+            startY = currMove.state.team2_y_positions[playerId];
+
             currX = nextMove.state.team2_x_positions[playerId];
             currY = nextMove.state.team2_y_positions[playerId];
 
@@ -225,27 +316,30 @@ contract GameLogic {
         }
 
         uint newX; uint newY;
+        uint[2] memory steps = [
+            ((startX < wantedX) ? (wantedX - startX) : (startX - wantedX)) / constants.PLAYER_STEPS_PER_MOVE(),
+            ((startY < wantedY) ? (wantedY - startY) : (startY - wantedY)) / constants.PLAYER_STEPS_PER_MOVE()
+        ];
 
         int diffX = int(wantedX) - int(currX);
         int diffY = int(wantedY) - int(currY);
 
         if(diffX > 0){
-            newX = currX + uint((1000 * diffX) / int(constants.PLAYER_STEPS_PER_MOVE())) / 1000;
+            newX = currX + steps[0];
         }else if (diffX < 0){
-            newX = currX - uint((1000 * -diffX) / int(constants.PLAYER_STEPS_PER_MOVE())) / 1000;
+            newX = currX - steps[0];
 
         }else{
             newX = wantedX;
         }
 
         if(diffY > 0){
-            newY = currY + uint((1000 * diffY) / int(constants.PLAYER_STEPS_PER_MOVE())) / 1000;
+            newY = currY + steps[1];
         }else if (diffY < 0){
-            newY = currY - uint((1000 * -diffY) / int(constants.PLAYER_STEPS_PER_MOVE()) / 1000);
+            newY = currY - steps[1];
         }else{
             newY = wantedY;
         }
-
 
         if(teamId == 1){
             nextMove.state.team1_x_positions[playerId] = newX;

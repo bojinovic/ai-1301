@@ -12,8 +12,8 @@ describe("Game", function () {
   async function deploy() {
     const [owner] = await ethers.getSigners();
 
-    const GameManager = await ethers.getContractFactory("GameManager");
-    const gameManager = await GameManager.deploy();
+    const Game = await ethers.getContractFactory("GameLogic");
+    const game = await Game.deploy();
 
     const CLF_CommitmentMockup = await ethers.getContractFactory(
       "CommitmentChainlinkFunctionConsumer"
@@ -28,14 +28,14 @@ describe("Game", function () {
     const clf_revealMockup2 = await CLF_RevealMockup.deploy();
 
     console.log(`Deployment finished`);
-    console.log(`\tGameManager @ ${gameManager.address}`);
+    console.log(`\tgame @ ${game.address}`);
     console.log(`\tlf_commitmentMockup1 @ ${clf_commitmentMockup1.address}`);
     console.log(`\tlf_commitmentMockup2 @ ${clf_commitmentMockup2.address}`);
     console.log(`\tlf_revealMockup1 @ ${clf_revealMockup1.address}`);
     console.log(`\tlf_revealtMockup2 @ ${clf_revealMockup2.address}`);
 
     return {
-      gameManager,
+      game,
       owner,
       clf_commitmentMockup1,
       clf_commitmentMockup2,
@@ -80,7 +80,7 @@ describe("Game", function () {
     });
     it.only("Should Play With Chainlink Mockups", async function () {
       const {
-        gameManager: game,
+        game,
         owner,
         clf_commitmentMockup1,
         clf_commitmentMockup2,
