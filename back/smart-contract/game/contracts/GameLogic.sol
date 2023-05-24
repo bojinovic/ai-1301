@@ -25,7 +25,7 @@ contract GameLogic {
     mapping(uint => mapping(uint => Types.MatchState)) matchState;
     mapping(uint => mapping(uint => Types.TeamState[])) public teamState;
     mapping(uint => mapping(uint => Types.TeamMove[])) public teamMove;
-    
+
     address public manager;
 
     constructor() {
@@ -92,243 +92,190 @@ contract GameLogic {
     }
 
 
-    // function stateUpdate(uint matchId) public {
+    function stateUpdate(uint matchId) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-    //     (Types.MoveInfo memory nextMove,Types.MoveInfo[5] memory progression) = playout(matchId);
+        require(
+            currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
+            "ERR: Match not in correct stage to perform a State update!"
+        ); 
 
-    //     // _pasteToStorage(matchId, matchIdToMoveId[matchId], nextMove);
+        uint stateId = matchIdToMatchStateId[matchId];
+        Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
 
-    //     matchIdToMoveId[matchId] += 1;
+        Types.TeamState[] memory currTeamState = progression[progression.length - 1].teamState;
+        Types.TeamState[] storage s_currTeamState = teamState[matchId][stateId+1];
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
 
-    // }
+            for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+                s_currTeamState[teamId].playerStats[playerId] = currTeamState[teamId].playerStats[playerId];
+                s_currTeamState[teamId].xPos[playerId] = currTeamState[teamId].xPos[playerId];
+                s_currTeamState[teamId].yPos[playerId] = currTeamState[teamId].yPos[playerId];
+            }
+        }
 
+        matchIdToMatchStateId[matchId] += 1;
+        currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
+    }
 
+    function getTeamStateProgression(
+        uint matchId,
+        uint stateId,
+        uint teamId
+    ) public view returns (
+        uint[10] memory x_pos
+    ){
+        Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
+   
+        for(uint stepId = 0; stepId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++stepId){
+            x_pos[stepId] = progression[2].teamState[teamId].xPos[stepId];
+        }
+    }
 
-    // function playout(
+    function getProgression(
+        uint matchId,
+        uint stateId
+    ) public view returns (
+        Types.ProgressionState[] memory progression
+    ){
+        console.log("getProgression - called");
 
-    //     uint matchId
+        Types.TeamState[] storage s_initialTeamState = teamState[matchId][stateId];
+        Types.TeamState[] memory initialTeamState = s_initialTeamState;
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            initialTeamState[teamId].playerStats = new Types.PlayerStats[](constants.NUMBER_OF_PLAYERS_PER_TEAM());
 
-    // ) public view returns (
-    //     Types.MoveInfo memory nextMove,
-    //     Types.MoveInfo[5] memory progression 
-    // ) {
-    //     uint currMoveId = matchIdToMoveId[matchId];
-    //     uint nextMoveId = currMoveId + 1;
+            for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+                initialTeamState[teamId].playerStats[playerId] = s_initialTeamState[teamId].playerStats[playerId];
+                initialTeamState[teamId].xPos[playerId] = s_initialTeamState[teamId].xPos[playerId];
+                initialTeamState[teamId].yPos[playerId] = s_initialTeamState[teamId].yPos[playerId];
+            }
+        }
 
-    //     Types.MoveInfo memory currMove =_copyMoveFromStorage(matchId, currMoveId);
-
-    //     nextMove = _copyMoveFromStorage(matchId, nextMoveId);
-
-    //     // progression
-
-    //     for(uint stepId = 1; stepId <= constants.PLAYER_STEPS_PER_MOVE(); ++stepId){
-
-    //         for(uint teamId = 1; teamId < 3; ++teamId){
-
-    //             //advance team positions
-    //             for(uint playerId = 0; playerId < 10; ++playerId){
-
-    //                 _advancePlayerPosition(currMove, nextMove, teamId, playerId, stepId);
-                    
-    //             }
-    //         }
-
-    //         progression[stepId - 1] = _copyMoveFromMemory(nextMove);
-    //     }
-
-    //     console.log("nextMove[] %s", nextMove.state.team1_x_positions[0]);
-    //     console.log("progression[] %s", progression[2].state.team1_x_positions[0]);
-
-    // }
-
-    // function _createNewMove() internal view returns (Types.MoveInfo memory newMove) {
-    //     bytes memory b;
-    //     Types.CommitmentInfo memory commitment1 = Types.CommitmentInfo(b); 
-    //     Types.CommitmentInfo memory commitment2 = Types.CommitmentInfo(b); 
-
-    //     newMove.commitments = new Types.CommitmentInfo[](2);
-    //     newMove.commitments[0] = commitment1;
-    //     newMove.commitments[1] = commitment2;
-        
-    //     Types.RevealInfo memory reveal1 = Types.RevealInfo(
-    //         b,
-    //         0,
-    //         new uint[](1),
-    //         new uint[](1),
-    //         false,
-    //         0,
-    //         false
-    //     );
-    //     Types.RevealInfo memory reveal2 = Types.RevealInfo(
-    //         b,
-    //         0,
-    //         new uint[](1),
-    //         new uint[](1),
-    //         false,
-    //         0,
-    //         false
-    //     );
-
-    //     newMove.reveals = new Types.RevealInfo[](2);
-    //     newMove.reveals[0] = reveal1;
-    //     newMove.reveals[1] = reveal2;
-    //     for(uint i = 0; i < 2; ++i){
-    //         newMove.reveals[i].team_x_positions = new uint[](10);
-    //         newMove.reveals[i].team_y_positions = new uint[](10);
-    //     }
-
-    //     newMove.state.team1_playerStats = new Types.PlayerStats[](10);
-    //     newMove.state.team2_playerStats = new Types.PlayerStats[](10);
-
-    //     newMove.state.team1_x_positions = new uint[](10);
-    //     newMove.state.team1_y_positions = new uint[](10);
-    //     newMove.state.team2_x_positions = new uint[](10);
-    //     newMove.state.team2_y_positions = new uint[](10);
-
-    //     newMove.state.pass_ball_x_positions = new uint[](7);
-    //     newMove.state.pass_ball_y_positions = new uint[](7);
-    // }
+        Types.TeamMove[] storage s_currTeamMove = teamMove[matchId][stateId];
+        Types.TeamMove[] memory currTeamMove = s_currTeamMove;
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+                currTeamMove[teamId].xPos[playerId] = s_currTeamMove[teamId].xPos[playerId];
+                currTeamMove[teamId].yPos[playerId] = s_currTeamMove[teamId].yPos[playerId];
+            }
+        }
 
 
+        progression = new Types.ProgressionState[](
+            constants.PLAYER_STEPS_PER_MOVE() + constants.BALL_STEPS_PER_MOVE()
+        );
 
-    // function _copyMoveFromStorage(uint matchId, uint moveId) internal view returns (Types.MoveInfo memory dst) {
-    //     Types.MoveInfo storage src = matchProgression[matchId][moveId];
-    //     dst = _createNewMove();
-    //     for(uint i = 0; i < 10; ++i){
-    //         for(uint j = 0; j < 2; ++j){
-    //             dst.reveals[j].team_x_positions[i] = src.reveals[j].team_x_positions[i];
-    //             dst.reveals[j].team_y_positions[i] = src.reveals[j].team_y_positions[i];
-    //         }
-    //         dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
-    //         dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
-    //         dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
-    //         dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
-    //     }
-    // }
+        uint stepId = 0;
+        for(; stepId < constants.PLAYER_STEPS_PER_MOVE() + constants.BALL_STEPS_PER_MOVE(); ++stepId){
 
-    // function _pasteToStorage(uint matchId, uint moveId, Types.MoveInfo memory src) internal {
-    //     Types.MoveInfo storage dst = matchProgression[matchId][moveId];
-    //     for(uint i = 0; i < 10; ++i){
-    //         for(uint j = 0; j < 2; ++j){
-    //             dst.reveals[j].team_x_positions[i] = src.reveals[j].team_x_positions[i];
-    //             dst.reveals[j].team_y_positions[i] = src.reveals[j].team_y_positions[i];
-    //         }
-    //         dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
-    //         dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
-    //         dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
-    //         dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
-    //     }
-    // }
-
-
-    // function _copyMoveFromMemory(Types.MoveInfo memory src) internal view returns (Types.MoveInfo memory dst) {
-    //     dst = _createNewMove();
-    //     for(uint i = 0; i < 10; ++i){
-    //         for(uint j = 0; j < 2; ++j){
-    //             dst.reveals[j].team_x_positions[i] = src.reveals[j].team_x_positions[i];
-    //             dst.reveals[j].team_y_positions[i] = src.reveals[j].team_y_positions[i];
-    //         }
-    //         dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
-    //         dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
-    //         dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
-    //         dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
-    //     }
-    // }
-
-    // function _copyPositions(Types.MoveInfo memory dst, Types.MoveInfo memory src) internal view returns (Types.MoveInfo memory) {
-    //     for(uint i = 0; i < 10; ++i){
-    //         dst.state.team1_x_positions[i] = src.state.team1_x_positions[i];
-    //         dst.state.team1_y_positions[i] = src.state.team1_y_positions[i];
-    //         dst.state.team2_x_positions[i] = src.state.team2_x_positions[i];
-    //         dst.state.team2_y_positions[i] = src.state.team2_y_positions[i];
-    //     }
-
-    //     return dst;
-    // }
-
-    // function _advancePlayerPosition(Types.MoveInfo memory currMove, Types.MoveInfo memory nextMove, uint teamId, uint playerId, uint stepId) internal view {
-    //     //where the player ultimately wants to go
-    //     uint wantedX = currMove.reveals[teamId-1].team_x_positions[playerId];
-    //     uint wantedY = currMove.reveals[teamId-1].team_y_positions[playerId];
-        
-    //     uint startX; uint startY;
-
-    //     uint currX; uint currY;
-
-    //     if(teamId == 1){
-
-    //         startX = currMove.state.team1_x_positions[playerId];
-    //         startY = currMove.state.team1_y_positions[playerId];
-
-    //         currX = nextMove.state.team1_x_positions[playerId];
-    //         currY = nextMove.state.team1_y_positions[playerId];
-
-    //         // console.log("wantedX ::: %s", wantedX);
-    //         // console.log("currX ::: %s", currX);
-
-    //         if(currX == wantedX && wantedX == currY){
-
-    //             return;
-    //         }
+            Types.ProgressionState memory currProgressionState = progression[stepId];
             
-    //         if(stepId == constants.PLAYER_STEPS_PER_MOVE()){
-    //             nextMove.state.team1_x_positions[playerId] = wantedX;
-    //             nextMove.state.team1_y_positions[playerId] = wantedY;
-    //             return;
-    //         } 
-    //     } else {
+            currProgressionState.teamState = new Types.TeamState[](constants.NUMBER_OF_TEAMS());
+            for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+                Types.TeamState memory currTeamState = currProgressionState.teamState[teamId];
+                currTeamState.playerStats = new Types.PlayerStats[](constants.NUMBER_OF_PLAYERS_PER_TEAM());
+                currTeamState.xPos = new uint[](constants.NUMBER_OF_PLAYERS_PER_TEAM());
+                currTeamState.yPos = new uint[](constants.NUMBER_OF_PLAYERS_PER_TEAM());
+            }
 
-    //         startX = currMove.state.team2_x_positions[playerId];
-    //         startY = currMove.state.team2_y_positions[playerId];
+            if(stepId == 0){
+                currProgressionState.teamState = initialTeamState;
+                continue;
+            }
 
-    //         currX = nextMove.state.team2_x_positions[playerId];
-    //         currY = nextMove.state.team2_y_positions[playerId];
+            progression[stepId] = progression[stepId-1];
+            for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+                progression[stepId].teamState[teamId].playerStats = new Types.PlayerStats[](constants.NUMBER_OF_PLAYERS_PER_TEAM());
 
-    //         if(currX == wantedX && wantedX == currY){
-    //             return;
-    //         }
-            
-    //         if(stepId == constants.PLAYER_STEPS_PER_MOVE()){
-    //             nextMove.state.team2_x_positions[playerId] = wantedX;
-    //             nextMove.state.team2_y_positions[playerId] = wantedY;
-    //             return;
-    //         } 
-    //     }
+                for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+                    progression[stepId].teamState[teamId].playerStats[playerId] =  progression[stepId-1].teamState[teamId].playerStats[playerId];
+                    progression[stepId].teamState[teamId].xPos[playerId] =  progression[stepId-1].teamState[teamId].xPos[playerId];
+                    progression[stepId].teamState[teamId].yPos[playerId] =  progression[stepId-1].teamState[teamId].yPos[playerId];
+                }
+            }
 
-    //     uint newX; uint newY;
-    //     uint[2] memory steps = [
-    //         ((startX < wantedX) ? (wantedX - startX) : (startX - wantedX)) / constants.PLAYER_STEPS_PER_MOVE(),
-    //         ((startY < wantedY) ? (wantedY - startY) : (startY - wantedY)) / constants.PLAYER_STEPS_PER_MOVE()
-    //     ];
 
-    //     int diffX = int(wantedX) - int(currX);
-    //     int diffY = int(wantedY) - int(currY);
+            for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+                for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+                    progression[stepId] = _advancePlayerPosition(
+                        initialTeamState,
+                        currTeamMove, 
+                        teamId, 
+                        playerId,
+                        progression[stepId-1], 
+                        progression[stepId], 
+                        stepId
+                    );
+                }
+            }
 
-    //     if(diffX > 0){
-    //         newX = currX + steps[0];
-    //     }else if (diffX < 0){
-    //         newX = currX - steps[0];
+        }
+    }
 
-    //     }else{
-    //         newX = wantedX;
-    //     }
+    function _advancePlayerPosition(
+        Types.TeamState[] memory initialTeamState,
+        Types.TeamMove[] memory wantedMove,
+        uint teamId,
+        uint playerId,
+        Types.ProgressionState memory prevState,
+        Types.ProgressionState memory nextState,
+        uint stepId
+    ) internal view returns (Types.ProgressionState memory) {
 
-    //     if(diffY > 0){
-    //         newY = currY + steps[1];
-    //     }else if (diffY < 0){
-    //         newY = currY - steps[1];
-    //     }else{
-    //         newY = wantedY;
-    //     }
 
-    //     if(teamId == 1){
-    //         nextMove.state.team1_x_positions[playerId] = newX;
-    //         nextMove.state.team1_y_positions[playerId] = newY;
-    //     } else {
-    //         nextMove.state.team2_x_positions[playerId] = newX;
-    //         nextMove.state.team2_y_positions[playerId] = newY;
-    //     }
-    // }
+        uint[2] memory wantedPos = [ 
+            wantedMove[teamId].xPos[playerId], 
+            wantedMove[teamId].yPos[playerId] 
+        ];
+
+        uint[2] memory initialPos = [
+            initialTeamState[teamId].xPos[playerId],
+            initialTeamState[teamId].yPos[playerId]
+        ];
+
+        uint[2] memory currPos = [
+            prevState.teamState[teamId].xPos[playerId],
+            prevState.teamState[teamId].yPos[playerId]
+        ];
+
+
+        if(currPos[0] == wantedPos[0] && currPos[1] == currPos[1]){
+            return nextState;
+        }
+
+        int[2] memory diff = [
+            int(wantedPos[0]) - int(initialPos[0]),
+            int(wantedPos[1]) - int(initialPos[1])
+        ];
+
+        uint distance = uint(diff[0]*diff[0] + diff[1]*diff[1]);
+
+        Types.PlayerStats memory currPlayerStats = prevState.teamState[teamId].playerStats[playerId];
+
+        if(true
+            //currPlayerStats.stamina >= constants.STAMINA_REQUIREMENT_FOR_ADVANCEMENT()
+            //&& currPlayerStats.speed * constants.PLAYER_STEPS_PER_MOVE() >= distance
+        ){
+            //player can move
+            uint[2] memory newPos = [
+                diff[0] > 0 ? 
+                    (currPos[0] + (wantedPos[0] - initialPos[0]) / constants.PLAYER_STEPS_PER_MOVE())
+                    :(currPos[0] - (initialPos[0] - wantedPos[0]) / constants.PLAYER_STEPS_PER_MOVE()),
+                diff[1] > 0 ? 
+                    (currPos[1] + (wantedPos[1] - initialPos[1]) / constants.PLAYER_STEPS_PER_MOVE())
+                    :(currPos[1] - (initialPos[1] - wantedPos[1]) / constants.PLAYER_STEPS_PER_MOVE())
+            ];
+
+            nextState.teamState[teamId].xPos[playerId] = newPos[0];
+            nextState.teamState[teamId].yPos[playerId] = newPos[1];
+            console.log("newPos: %s %s", newPos[0], newPos[1]);
+        }
+
+
+        return nextState;
+    }
+
 
 
 

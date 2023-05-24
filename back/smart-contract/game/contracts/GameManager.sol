@@ -8,7 +8,7 @@ import "./interfaces/IChainlinkFunctionConsumer.sol";
 
 
 // Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract GameManager {
 
@@ -103,13 +103,14 @@ contract GameManager {
         currMatch.commitmentFunctionConsumer[1] = commitmentFunctionConsumer;
         currMatch.revealFunctionConsumer[1] = revealFunctionConsumer;
 
-        currMatch.stage == Types.MATCH_STAGE.P2_JOINED_THE_MATCH;
+        currMatch.stage = Types.MATCH_STAGE.P2_JOINED_THE_MATCH;
 
         requestSeed(matchId);
 
         fullfilSeedRequest(1301, 782491124151251301);
 
         //TODO:emit event
+
     }
 
     function requestSeed(
@@ -132,7 +133,10 @@ contract GameManager {
 
         currMatch.seed = seed;
 
-        currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
+        currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
+
+        console.log("fullfilSeedRequest - called");
+
     }
 
 
@@ -141,17 +145,23 @@ contract GameManager {
     ) public {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
 
+        console.log("commitmentTick - called");
+
         require(
             currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED 
             || currMatch.stage == Types.MATCH_STAGE.STATE_UPDATE_PERFORMED, 
             "ERR: Match not in correct stage to fetch Commitments!"
         );
 
+        _initStorageForMatch(matchId, matchIdToMatchStateId[matchId]+1);
+
+        console.log("commitmentTickCalled - passed requirement");
+
         for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
             IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).requestData();
         }
 
-        currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_FETCHED;
+        currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_FETCHED;
     }
 
     function updateCommitmentInfo(
@@ -160,8 +170,7 @@ contract GameManager {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
 
         require(
-            currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED 
-            || currMatch.stage == Types.MATCH_STAGE.STATE_UPDATE_PERFORMED, 
+            currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_FETCHED,
             "ERR: Match not in correct stage to receive Commitments!"
         );        
         
@@ -180,7 +189,7 @@ contract GameManager {
             );      
         }
 
-        currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_RECEIVED;
+        currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_RECEIVED;
     }
 
     function _updateTeamMoveCommitments(
@@ -188,6 +197,12 @@ contract GameManager {
         uint teamId,
         bytes memory payload
     ) internal {
+
+        Types.TeamMove storage currTeamMove = teamMove[matchId][matchIdToMatchStateId[matchId]][teamId];
+
+        for(uint playerId = 0; playerId < 10; ++playerId)
+            currTeamMove.xPos[playerId] = 13 * playerId * matchIdToMatchStateId[matchId];
+
 
     }
     function revealTick(
@@ -204,7 +219,7 @@ contract GameManager {
             IChainlinkFunctionConsumer(currMatch.revealFunctionConsumer[teamId]).requestData();
         }
 
-        currMatch.stage == Types.MATCH_STAGE.REVEALS_FETCHED;
+        currMatch.stage = Types.MATCH_STAGE.REVEALS_FETCHED;
     }
 
     function updateRevealInfo(
@@ -232,7 +247,7 @@ contract GameManager {
             );      
         }
 
-        currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_RECEIVED;
+        currMatch.stage = Types.MATCH_STAGE.REVEAL_RECEIVED;
     }
 
     function _updateTeamMove(
