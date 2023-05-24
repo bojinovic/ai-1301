@@ -31,8 +31,39 @@ contract GameManager {
         logic = _logic;
     }
 
-    function _iniStorageForMatch(uint matchId) internal {
+    function _initStorageForMatch(
+        uint matchId, 
+        uint currMoveId
+    ) internal {
 
+        if(currMoveId == 0){
+            for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+                matchInfo[matchId].commitmentFunctionConsumer.push();
+                matchInfo[matchId].revealFunctionConsumer.push();
+            }
+        }
+
+        Types.MatchState storage currMatchState = matchState[matchId][currMoveId];
+        Types.TeamState[] storage currTeamState = teamState[matchId][currMoveId];
+        Types.TeamMove[] storage currTeamMove = teamMove[matchId][currMoveId];
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+
+            currMatchState.score.push(0);
+
+            currTeamState.push();
+            for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+                currTeamState[teamId].playerStats.push();
+
+                currTeamState[teamId].xPos.push();
+                currTeamState[teamId].yPos.push();
+            }
+
+            currTeamMove.push();
+            for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+                currTeamMove[teamId].xPos.push();
+                currTeamMove[teamId].yPos.push();
+            }
+        }
     }
 
 
@@ -44,7 +75,7 @@ contract GameManager {
 
         uint matchId = matchCounter;
 
-        _iniStorageForMatch(matchId);
+        _initStorageForMatch(matchId, 0);
 
         Types.MatchInfo storage currMatch = matchInfo[matchId];
 

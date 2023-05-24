@@ -16,11 +16,6 @@ contract Types {
         MATCH_ENDED
     }
 
-    struct PlayerStats {
-        uint speed;
-        uint skill;
-        uint stamina;
-    }
 
     struct MatchInfo {
         uint seed;
@@ -36,6 +31,12 @@ contract Types {
 
     struct MatchState {
         uint[] score;
+    }
+
+    struct PlayerStats {
+        uint speed;
+        uint skill;
+        uint stamina;
     }
 
     struct TeamState {
