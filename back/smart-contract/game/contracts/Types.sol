@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 contract Types {
 
     enum MATCH_STAGE {
+        DUMMY,
         P1_CREATED_THE_MATCH,
         P2_JOINED_THE_MATCH,
         RANDOM_SEED_FETCHED,
@@ -24,13 +25,21 @@ contract Types {
     struct MatchInfo {
         uint seed;
 
-        address commitmentFunctionConsumer;
-        address revealFunctionConsumer;
+        address[] commitmentFunctionConsumer;
+        address[] revealFunctionConsumer;
 
         MATCH_STAGE stage;
+
+        uint stateId;
+    }
+
+
+    struct MatchState {
+        uint[] score;
     }
 
     struct TeamState {
+        PlayerStats[] playerStats;
         uint[] xPos;
         uint[] yPos;
 
@@ -50,6 +59,7 @@ contract Types {
 
         bool wantToShoot;
     }
+
 
     struct ProgressionState {
         bool ballWasWon;

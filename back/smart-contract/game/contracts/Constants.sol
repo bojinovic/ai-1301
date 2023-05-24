@@ -1,6 +1,9 @@
 
 
 contract Constants {
+
+    uint constant public NUMBER_OF_TEAMS = 2;
+
     uint constant public PLAYER_STEPS_PER_MOVE = 5;
     uint constant public BALL_STEPS_PER_MOVE = 7;
 

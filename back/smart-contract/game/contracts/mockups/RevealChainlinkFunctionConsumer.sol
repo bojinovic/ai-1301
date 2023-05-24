@@ -7,7 +7,7 @@ contract RevealChainlinkFunctionConsumer is IChainlinkFunctionConsumer{
 
     bytes encodedData;
     bytes32 commitment;
-    bool public dataReady = false;
+    bool public dataIsReady = false;
     bool public dataHasBeenRead = true;
   
     constructor () {
@@ -15,13 +15,13 @@ contract RevealChainlinkFunctionConsumer is IChainlinkFunctionConsumer{
     }
     function requestData () external{
       require(dataHasBeenRead == true, "ERR: Previous data has not been read!");
-      dataReady = true;
+      dataIsReady = true;
       dataHasBeenRead = false;
     }
 
     function copyData () external returns (bytes memory){
       dataHasBeenRead = true;
-      dataReady = false;
+      dataIsReady = false;
       return encodedData;
     }
 

@@ -12,47 +12,45 @@ import "./interfaces/IChainlinkFunctionConsumer.sol";
 
 contract GameManager {
 
+    Constants public constants;
+    address public logic;
     address public ticker;
 
-    Constants public constants;
-
-    address public logic;
 
     uint public matchCounter;
-    mapping(uint => Types.MatchInfo) public matches;
-    mapping(uint => uint) public matchIdToMoveId;
-    mapping(uint => mapping(uint => Types.MoveInfo)) public matchProgression;
 
-    mapping(uint => uint) matchIdToVRFRequestId;
-    mapping(uint => uint) VRFRequestIdToFullfilmentValue;
+    mapping(uint => Types.MatchInfo) public matchInfo;
+    mapping(uint => uint) public seedRequestIdMatchId;
+    mapping(uint => uint) public matchIdToMatchStateId;
+    mapping(uint => mapping(uint => Types.MatchState)) matchState;
+    mapping(uint => mapping(uint => Types.TeamState[])) public teamState;
+    mapping(uint => mapping(uint => Types.TeamMove[])) public teamMove;
 
-    modifier matchNotFullyInitialized (uint matchId) {
-        require(matches[matchId].initFinished == false, "ERR: The match has already been initialized!");
-        _;
-    }
-    
     constructor(address _logic) {
         constants = new Constants();
         logic = _logic;
-
     }
 
-    function commitments(uint matchId, uint moveId) public view returns (Types.CommitmentInfo[] memory) {
-        return matchProgression[matchId][moveId].commitments;
-    }
-    function reveals(uint matchId, uint moveId) public view returns (Types.RevealInfo[] memory) {
-        return matchProgression[matchId][moveId].reveals;
+    function _iniStorageForMatch(uint matchId) internal {
+
     }
 
 
 
     function createMatch(
-        address team1_commitmentChainlinkFunctionConsumer, 
-        address team1_revealChainlinkFunctionConsumer
+        address commitmentFunctionConsumer, 
+        address revealFunctionConsumer
     ) public {
 
-        matches[matchCounter].team1_commitmentChainlinkFunctionConsumer = team1_commitmentChainlinkFunctionConsumer;
-        matches[matchCounter].team1_revealChainlinkFunctionConsumer = team1_revealChainlinkFunctionConsumer;
+        uint matchId = matchCounter;
+
+        _iniStorageForMatch(matchId);
+
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
+
+        currMatch.stage = Types.MATCH_STAGE.P1_CREATED_THE_MATCH;
+        currMatch.commitmentFunctionConsumer[0] = commitmentFunctionConsumer;
+        currMatch.revealFunctionConsumer[0] = revealFunctionConsumer;
 
         matchCounter += 1;
 
@@ -61,167 +59,157 @@ contract GameManager {
 
     function joinMatch(
         uint matchId,
-        address team2_commitmentChainlinkFunctionConsumer, 
-        address team2_revealChainlinkFunctionConsumer
+        address commitmentFunctionConsumer, 
+        address revealFunctionConsumer
     ) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-        require(matchCounter > matchId, "ERR: Match with that ID has not yet been created!");
+        require(
+            currMatch.stage == Types.MATCH_STAGE.P1_CREATED_THE_MATCH, 
+            "ERR: You can only join a newly created match!"
+        );
 
-        matches[matchId].team2_commitmentChainlinkFunctionConsumer = team2_commitmentChainlinkFunctionConsumer;
-        matches[matchId].team2_revealChainlinkFunctionConsumer = team2_revealChainlinkFunctionConsumer;
+        currMatch.commitmentFunctionConsumer[1] = commitmentFunctionConsumer;
+        currMatch.revealFunctionConsumer[1] = revealFunctionConsumer;
+
+        currMatch.stage == Types.MATCH_STAGE.P2_JOINED_THE_MATCH;
 
         requestSeed(matchId);
+
+        fullfilSeedRequest(1301, 782491124151251301);
 
         //TODO:emit event
     }
 
-    function requestSeed(uint matchId) matchNotFullyInitialized(matchId) internal {
+    function requestSeed(
+        uint matchId
+    ) internal {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
 
         //TODO: initiate VRF request...
-        uint requestId = 1301;
+        seedRequestIdMatchId[1301] = matchId;
 
-        matchIdToVRFRequestId[matchId] = requestId;
-
-        VRFRequestIdToFullfilmentValue[requestId] = 1301;
+        currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_FETCHED;
     }
 
-    function completeInitialization(uint matchId) public matchNotFullyInitialized(matchId) {
+    function fullfilSeedRequest(
+        uint requestId,
+        uint seed
+    ) internal {
+        //TODO: implement VRF fulfill request function
+        Types.MatchInfo storage currMatch = matchInfo[seedRequestIdMatchId[requestId]];
 
-        require(VRFRequestIdToFullfilmentValue[matchIdToVRFRequestId[matchId]] != 0, "ERR: Randomness has not been fullfiled for that match!");
+        currMatch.seed = seed;
 
-        //TODO: generate random values for both teams player stats
-
-        _initMoveInStorage(matchId, 0);
-        matches[matchId].initFinished = true;
+        currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
     }
 
-    function commitmentTick(uint matchId) public {
 
-        require(matchCounter > matchId, "ERR: Match with that ID has not yet been created!");
+    function commitmentTick(
+        uint matchId
+    ) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-        require(matches[matchId].initFinished == true, "ERR: The match is not fully initialized!");
+        require(
+            currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED 
+            || currMatch.stage == Types.MATCH_STAGE.STATE_UPDATE_PERFORMED, 
+            "ERR: Match not in correct stage to fetch Commitments!"
+        );
 
-        IChainlinkFunctionConsumer(matches[matchId].team1_commitmentChainlinkFunctionConsumer).requestData();
-
-        IChainlinkFunctionConsumer(matches[matchId].team2_commitmentChainlinkFunctionConsumer).requestData();
-    }
-
-    function updateCommitmentInfo(uint matchId) public {
-
-        require(matches[matchId].initFinished == true, "ERR: The match is not fully initialized!");
-
-        require(IChainlinkFunctionConsumer(matches[matchId].team1_commitmentChainlinkFunctionConsumer).dataReady(), "ERR: Team1 Commitment not fullfiled!");
-
-        require(IChainlinkFunctionConsumer(matches[matchId].team2_commitmentChainlinkFunctionConsumer).dataReady(), "ERR: Team2 Commitment not fullfiled!");
-
-        uint moveId = matchIdToMoveId[matchId];
-        matchProgression[matchId][moveId].commitments[0].data = 
-            IChainlinkFunctionConsumer(matches[matchId].team1_commitmentChainlinkFunctionConsumer).copyData();
-
-        matchProgression[matchId][moveId].commitments[1].data = 
-            IChainlinkFunctionConsumer(matches[matchId].team2_commitmentChainlinkFunctionConsumer).copyData();
-    }
-
-    function revealTick(uint matchId) public {
-
-        require(matches[matchId].initFinished == true, "ERR: The match is not fully initialized!");
-
-        IChainlinkFunctionConsumer(matches[matchId].team1_revealChainlinkFunctionConsumer).requestData();
-
-        IChainlinkFunctionConsumer(matches[matchId].team2_revealChainlinkFunctionConsumer).requestData();
-    }
-
-    function updateRevealInfo(uint matchId) public {
-        require(matches[matchId].initFinished == true, "ERR: The match is not fully initialized!");
-
-        require(IChainlinkFunctionConsumer(matches[matchId].team1_revealChainlinkFunctionConsumer).dataReady(), "ERR: Team1 Reveal not fullfiled!");
-
-        require(IChainlinkFunctionConsumer(matches[matchId].team2_revealChainlinkFunctionConsumer).dataReady(), "ERR: Team2 Reveal not fullfiled!");
-
-        bytes memory team1_revealData = IChainlinkFunctionConsumer(matches[matchId].team1_revealChainlinkFunctionConsumer).copyData();
-        _updateRevealForTeam(matchId, 1, team1_revealData);
-            
-
-        bytes memory team2_revealData = IChainlinkFunctionConsumer(matches[matchId].team2_revealChainlinkFunctionConsumer).copyData();
-        _updateRevealForTeam(matchId, 2, team2_revealData);
-          
-    }
-
-    function getCommitment(bytes memory rawData) public view returns (bytes32) {
-        return abi.decode(rawData, (bytes32));
-    }
-
-    function _updateRevealForTeam(uint matchId, uint teamId, bytes memory rawData) public {
-
-        uint moveId = matchIdToMoveId[matchId];
-        
-        Types.RevealInfo storage reveal = matchProgression[matchId][moveId].reveals[teamId - 1];
-
-        reveal.data = rawData;
-
-        //decoding
-        uint8[10] memory rawData= abi.decode(rawData, (uint8[10]));
-
-        reveal.team_x_positions = new uint[](10);
-        for(uint i = 0; i < 10; ++i){
-            reveal.team_x_positions[i] = rawData[i];
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).requestData();
         }
 
-        _initMoveInStorage(matchId, matchIdToMoveId[matchId]+1);
+        currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_FETCHED;
     }
 
+    function updateCommitmentInfo(
+        uint matchId
+    ) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-    function _initMoveInStorage(uint matchId, uint moveId) internal {
-        Types.MoveInfo storage move = matchProgression[matchId][moveId];
-
-        bytes memory b;
-        Types.CommitmentInfo memory commitment1 = Types.CommitmentInfo(b); 
-        Types.CommitmentInfo memory commitment2 = Types.CommitmentInfo(b); 
-
-        move.commitments.push(commitment1);
-        move.commitments.push(commitment2);
-
-        Types.RevealInfo memory reveal1 = Types.RevealInfo(
-            b,
-            0,
-            new uint[](1),
-            new uint[](1),
-            false,
-            0,
-            false
-        );
-        Types.RevealInfo memory reveal2 = Types.RevealInfo(
-            b,
-            0,
-            new uint[](1),
-            new uint[](1),
-            false,
-            0,
-            false
-        );
-        move.reveals.push(reveal1);
-        move.reveals.push(reveal2);
-
-
-        for(uint i = 0; i < 2; ++i){
-            move.reveals[i].team_x_positions = new uint[](10);
-            move.reveals[i].team_y_positions = new uint[](10);
-        }
+        require(
+            currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED 
+            || currMatch.stage == Types.MATCH_STAGE.STATE_UPDATE_PERFORMED, 
+            "ERR: Match not in correct stage to receive Commitments!"
+        );        
         
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            require(
+                IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).dataIsReady(),
+                "ERR: Not all teams have issued commitments!"
+            );
+        }
 
-        //TODO: find a fix around
-        // move.state.team1_playerStats = new Types.PlayerStats[](10);
-        // move.state.team2_playerStats = new Types.PlayerStats[](10);
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            _updateTeamMoveCommitments(
+                matchId, 
+                teamId,
+                IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).copyData()
+            );      
+        }
 
-        move.state.team1_x_positions = new uint[](10);
-        move.state.team1_y_positions = new uint[](10);
-        move.state.team2_x_positions = new uint[](10);
-        move.state.team2_y_positions = new uint[](10);
-
-        move.state.pass_ball_x_positions = new uint[](7);
-        move.state.pass_ball_y_positions = new uint[](7);
-   
+        currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_RECEIVED;
     }
-    
+
+    function _updateTeamMoveCommitments(
+        uint matchId,
+        uint teamId,
+        bytes memory payload
+    ) internal {
+
+    }
+    function revealTick(
+        uint matchId
+    ) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
+
+        require(
+            currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_RECEIVED,
+            "ERR: Match not in correct stage to fetch Reaveals!"
+        );
+
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            IChainlinkFunctionConsumer(currMatch.revealFunctionConsumer[teamId]).requestData();
+        }
+
+        currMatch.stage == Types.MATCH_STAGE.REVEALS_FETCHED;
+    }
+
+    function updateRevealInfo(
+        uint matchId
+    ) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
+
+        require(
+            currMatch.stage == Types.MATCH_STAGE.REVEALS_FETCHED,
+            "ERR: Match not in correct stage to receive Reveals!"
+        );        
+        
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            require(
+                IChainlinkFunctionConsumer(currMatch.revealFunctionConsumer[teamId]).dataIsReady(),
+                "ERR: Not all teams have issued commitments!"
+            );
+        }
+
+        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            _updateTeamMove(
+                matchId, 
+                teamId,
+                IChainlinkFunctionConsumer(currMatch.revealFunctionConsumer[teamId]).copyData()
+            );      
+        }
+
+        currMatch.stage == Types.MATCH_STAGE.COMMITMENTS_RECEIVED;
+    }
+
+    function _updateTeamMove(
+        uint matchId,
+        uint teamId,
+        bytes memory payload
+    ) internal {
+
+    }
 
 }
