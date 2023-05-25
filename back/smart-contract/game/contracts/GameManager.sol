@@ -26,6 +26,7 @@ contract GameManager {
     mapping(uint => mapping(uint => Types.TeamState[])) public teamState;
     mapping(uint => mapping(uint => Types.TeamMove[])) public teamMove;
 
+    event MatchEnteredStage(uint matchId, Types.MATCH_STAGE stage);
     constructor(address _logic) {
         constants = new Constants();
         logic = _logic;
@@ -85,7 +86,7 @@ contract GameManager {
 
         matchCounter += 1;
 
-        //TODO:emit event
+        emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
     function joinMatch(
@@ -109,8 +110,7 @@ contract GameManager {
 
         fullfilSeedRequest(1301, 782491124151251301);
 
-        //TODO:emit event
-
+        emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
     function requestSeed(
@@ -122,6 +122,8 @@ contract GameManager {
         seedRequestIdMatchId[1301] = matchId;
 
         currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_FETCHED;
+
+        emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
     function fullfilSeedRequest(
@@ -137,6 +139,7 @@ contract GameManager {
 
         console.log("fullfilSeedRequest - called");
 
+        emit MatchEnteredStage(seedRequestIdMatchId[requestId], currMatch.stage);
     }
 
 
@@ -162,6 +165,8 @@ contract GameManager {
         }
 
         currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_FETCHED;
+
+        emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
     function updateCommitmentInfo(
@@ -190,6 +195,8 @@ contract GameManager {
         }
 
         currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_RECEIVED;
+
+        emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
     function _updateTeamMoveCommitments(
@@ -197,13 +204,9 @@ contract GameManager {
         uint teamId,
         bytes memory payload
     ) internal {
-
         Types.TeamMove storage currTeamMove = teamMove[matchId][matchIdToMatchStateId[matchId]][teamId];
 
-        for(uint playerId = 0; playerId < 10; ++playerId)
-            currTeamMove.xPos[playerId] = 13 * playerId * matchIdToMatchStateId[matchId];
-
-
+        currTeamMove.commitment = payload;
     }
     function revealTick(
         uint matchId
@@ -220,8 +223,9 @@ contract GameManager {
         }
 
         currMatch.stage = Types.MATCH_STAGE.REVEALS_FETCHED;
-    }
 
+        emit MatchEnteredStage(matchId, currMatch.stage);
+    }
     function updateRevealInfo(
         uint matchId
     ) public {
@@ -248,6 +252,8 @@ contract GameManager {
         }
 
         currMatch.stage = Types.MATCH_STAGE.REVEAL_RECEIVED;
+
+        emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
     function _updateTeamMove(
@@ -255,7 +261,31 @@ contract GameManager {
         uint teamId,
         bytes memory payload
     ) internal {
+        Types.TeamMove storage currTeamMove = teamMove[matchId][matchIdToMatchStateId[matchId]][teamId];
 
+        bytes memory revealHash = abi.encode(keccak256(payload));
+
+        require(
+            keccak256(revealHash) == keccak256(currTeamMove.commitment),
+            "ERR: Reveal doesn't correspond to the Commitment"  
+        );
+
+        currTeamMove.reveal = payload;
+
+        (uint seed, uint packedData) = abi.decode(payload, (uint, uint));
+
+        uint SHIFT_STEP = constants.BITS_PER_PLAYER_X_POS() + constants.BITS_PER_PLAYER_Y_POS();
+
+        for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+            uint segment = (packedData >> (playerId * SHIFT_STEP));
+            currTeamMove.xPos[playerId] = (segment >> constants.BITS_PER_PLAYER_Y_POS()) & (2**constants.BITS_PER_PLAYER_X_POS() - 1);
+            currTeamMove.yPos[playerId] = segment & (2**constants.BITS_PER_PLAYER_Y_POS() - 1);
+        }
+
+        currTeamMove.wantToShoot = (packedData >> (SHIFT_STEP * constants.NUMBER_OF_PLAYERS_PER_TEAM()) & 1) == 1;
+        
+        currTeamMove.wantToPass = (packedData >> (SHIFT_STEP * constants.NUMBER_OF_PLAYERS_PER_TEAM() + 1) & 1) == 1;
+        currTeamMove.receivingPlayerId = (packedData >> (SHIFT_STEP * constants.NUMBER_OF_PLAYERS_PER_TEAM() + 2) & 0xf);
     }
 
 }

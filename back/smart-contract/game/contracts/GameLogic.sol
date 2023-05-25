@@ -28,6 +28,8 @@ contract GameLogic {
 
     address public manager;
 
+    event MatchEnteredStage(uint matchId, Types.MATCH_STAGE stage);
+
     constructor() {
         constants = new Constants();
         manager = address(new GameManager(address(this)));
@@ -116,6 +118,8 @@ contract GameLogic {
 
         matchIdToMatchStateId[matchId] += 1;
         currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
+
+        emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
     function getTeamStateProgression(
@@ -267,11 +271,12 @@ contract GameLogic {
                     :(currPos[1] - (initialPos[1] - wantedPos[1]) / constants.PLAYER_STEPS_PER_MOVE())
             ];
 
-            nextState.teamState[teamId].xPos[playerId] = newPos[0];
-            nextState.teamState[teamId].yPos[playerId] = newPos[1];
-            console.log("newPos: %s %s", newPos[0], newPos[1]);
+            if(newPos[0] < constants.FIELD_W() && newPos[0] < constants.FIELD_H()){
+                nextState.teamState[teamId].xPos[playerId] = newPos[0];
+                nextState.teamState[teamId].yPos[playerId] = newPos[1];
+                console.log("newPos: %s %s", newPos[0], newPos[1]);
+            }
         }
-
 
         return nextState;
     }

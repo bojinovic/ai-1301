@@ -24,12 +24,11 @@ contract RevealChainlinkFunctionConsumer is IChainlinkFunctionConsumer{
       dataIsReady = false;
       return encodedData;
     }
-
     function updateData (uint seed) public {
 
-      uint8[10] memory data = [uint8(seed % 7), uint8(seed % 71), uint8(seed % 17), uint8(seed % 13), uint8(seed % 51), uint8(seed % 12), uint8(seed % 57), uint8(seed % 51), uint8(seed % 42), uint8(seed % 19)];
+      uint data = seed;
 
-      encodedData = abi.encode(data);
+      encodedData = abi.encode(seed, data);
 
       commitment = keccak256(encodedData);
     }
