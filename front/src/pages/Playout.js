@@ -10,8 +10,8 @@ const Playout = () => {
       <Game></Game>
       <MatchInfo></MatchInfo>
       <div className="TeamInfosWrapper">
-        <TeamInfo></TeamInfo>
-        <TeamInfo></TeamInfo>
+        <TeamInfo teamId={0}></TeamInfo>
+        <TeamInfo teamId={1}></TeamInfo>
       </div>
     </div>
   );

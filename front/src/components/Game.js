@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import Sketch from "react-p5";
 import * as common from "../utils/common";
-import { Field, Team, Ball } from "../utils/game";
+import { Field, Team, Ball, superLoop } from "../utils/game";
 
 // import { init } from "../utils/game";
 import "../style/css/Game.css";
@@ -15,7 +15,7 @@ let ball;
 
 const Game = () => {
   useEffect(async () => {
-    setInterval(async () => await updateHistory(), 200);
+    setInterval(async () => await updateHistory(), 3000);
   }, []);
 
   const setup = async (p5, parentRef) => {
@@ -31,8 +31,8 @@ const Game = () => {
       50
     );
 
-    await common.delay(8000);
-    const move = MATCH_INFO.history[MATCH_INFO.currMoveIdx];
+    while (!MATCH_INFO.history[0]) await common.delay(1000);
+    const move = MATCH_INFO.history[0];
     teams = [new Team(p5, move, 1), new Team(p5, move, 2)];
     ball = new Ball(p5, 0, 10);
   };
@@ -41,13 +41,17 @@ const Game = () => {
 
     field.animate();
 
-    if (teams && teams[0].players[0].moving == false) {
-      if (MATCH_INFO.currMoveIdx + 1 < MATCH_INFO.history.length) {
+    if (teams && teams[0].isInMotion() == false) {
+      if (
+        MATCH_INFO.currMoveIdx + 1 < MATCH_INFO.history.length &&
+        MATCH_INFO.history[MATCH_INFO.currMoveIdx]
+      ) {
         teams.forEach((t) =>
           t.move(MATCH_INFO.history[MATCH_INFO.currMoveIdx])
         );
 
         ball.move(
+          true,
           MATCH_INFO.history[MATCH_INFO.currMoveIdx].ball_position[0],
           MATCH_INFO.history[MATCH_INFO.currMoveIdx].ball_position[1]
         );
@@ -55,13 +59,8 @@ const Game = () => {
         MATCH_INFO.currMoveIdx += 1;
       }
     }
-    if (teams)
-      teams.forEach((t) => {
-        t.animate();
-      });
-
-    if (ball) {
-      ball.animate();
+    if (teams) {
+      await superLoop(teams[0], teams[1], ball);
     }
   };
 

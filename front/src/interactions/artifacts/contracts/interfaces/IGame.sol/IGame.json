@@ -1,0 +1,477 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IGame",
+  "sourceName": "contracts/interfaces/IGame.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "commitmentTick",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "createMatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "dispute",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "joinMatch",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "matchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "previousMoveId",
+          "type": "uint256"
+        }
+      ],
+      "name": "playout",
+      "outputs": [
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "speed",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "skill",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "stamina",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IGame.PlayerStats[10]",
+              "name": "team1_playerStats",
+              "type": "tuple[10]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "speed",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "skill",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "stamina",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IGame.PlayerStats[10]",
+              "name": "team2_playerStats",
+              "type": "tuple[10]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team1_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team2_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team1_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team2_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team1_seed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team2_seed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team_with_the_ball",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "player_id_with_the_ball",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "pass",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "pass_ball_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "pass_ball_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "receiving_player_id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "interceptionOcurred",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "shoot",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IGame.MoveInfo",
+          "name": "move",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "speed",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "skill",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "stamina",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IGame.PlayerStats[10]",
+              "name": "team1_playerStats",
+              "type": "tuple[10]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "speed",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "skill",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "stamina",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IGame.PlayerStats[10]",
+              "name": "team2_playerStats",
+              "type": "tuple[10]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team1_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team2_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team1_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team2_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team1_seed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team2_seed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team_with_the_ball",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "player_id_with_the_ball",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "pass",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "pass_ball_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "pass_ball_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "receiving_player_id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "interceptionOcurred",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "shoot",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IGame.MoveInfo[5]",
+          "name": "moveProgression",
+          "type": "tuple[5]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "revealTick",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "matchId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "speed",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "skill",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "stamina",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IGame.PlayerStats[10]",
+              "name": "team1_playerStats",
+              "type": "tuple[10]"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256",
+                  "name": "speed",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "skill",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "stamina",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct IGame.PlayerStats[10]",
+              "name": "team2_playerStats",
+              "type": "tuple[10]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team1_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team2_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team1_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "team2_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team1_seed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team2_seed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "team_with_the_ball",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "player_id_with_the_ball",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "pass",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "pass_ball_x_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "pass_ball_y_positions",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "receiving_player_id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "interceptionOcurred",
+              "type": "bool"
+            },
+            {
+              "internalType": "bool",
+              "name": "shoot",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct IGame.MoveInfo",
+          "name": "reportedMoveInfo",
+          "type": "tuple"
+        }
+      ],
+      "name": "stateUpdateTick",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "matchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "commitment",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateCommitmentInfo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "matchId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "commitment",
+          "type": "bytes"
+        }
+      ],
+      "name": "updateRevealInfo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

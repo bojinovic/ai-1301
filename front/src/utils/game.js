@@ -17,10 +17,35 @@ const SIXTEEN_METER_W = 115;
 
 const PENALTY_DISCTANCE = 85;
 
+export const superLoop = async (team1, team2, ball) => {
+  const players = [...team1.players, ...team2.players];
+
+  const f1 = async () => {
+    ball.animate();
+    players.forEach(async (player) => {
+      const hasTheBall = false;
+      //   this.whoami == this._move.team_with_the_ball.toNumber() &&
+      //   k == this._move.player_id_with_the_ball.toNumber();
+      // if (hasTheBall) console.log(`${k} has the ball`);
+      player.progress(hasTheBall);
+    });
+    players.forEach(async (player) => {
+      // player.drawArrow();
+    });
+    players.forEach(async (player) => {
+      player.drawOhr();
+    });
+  };
+
+  const f2 = async () => ball.animate();
+
+  await f1();
+};
+
 const scalePosition = (pos) => {
   return [
-    FIELD_PADDING + (pos[0] / 100) * FIELD_W,
-    FIELD_PADDING + (pos[1] / 50) * FIELD_H,
+    FIELD_PADDING + (pos[0] / 1024) * FIELD_W,
+    FIELD_PADDING + (pos[1] / 512) * FIELD_H,
   ];
 };
 
@@ -133,19 +158,28 @@ class Team {
   }
 
   move(move) {
+    this._move = move;
     this.next_team_positions =
       this.whoami == 1 ? move.team1_positions : move.team2_positions;
     this.players.forEach((p, k) => {
-      p.move(this.next_team_positions[k][0], this.next_team_positions[k][1]);
+      p.move(
+        move.ball_is_being_passed,
+        this.next_team_positions[k][0],
+        this.next_team_positions[k][1]
+      );
     });
   }
 
   animate() {
     this.players.forEach((p, k) => {
-      p.progress();
+      const hasTheBall =
+        this.whoami == this._move.team_with_the_ball.toNumber() &&
+        k == this._move.player_id_with_the_ball.toNumber();
+      if (hasTheBall) console.log(`${k} has the ball`);
+      p.progress(hasTheBall);
     });
     this.players.forEach((p, k) => {
-      p.drawArrow();
+      // p.drawArrow();
     });
     this.players.forEach((p, k) => {
       p.drawOhr();
@@ -180,20 +214,22 @@ class Player {
 
     this.animationCounter = 0;
     this.ANIMATION_MAX = 10;
+    this.dir = false;
   }
 
-  move(_x, _y) {
+  move(ball_is_being_passed, _x, _y) {
     [_x, _y] = scalePosition([_x, _y]);
     this.delta = [(_x - this.x) / this.steps, (_y - this.y) / this.steps];
     this.nextX = _x;
     this.nextY = _y;
     this.currStep = 0;
     this.moving = true;
+    this.ball_is_being_passed = ball_is_being_passed;
   }
 
   animate() {}
 
-  progress() {
+  progress(hasTheBall) {
     this.currStep = (this.currStep + 1) % this.steps;
 
     if (this.moving == true && this.currStep != 0) {
@@ -205,6 +241,11 @@ class Player {
       this.delta = [0, 0];
       this.moving = false;
     }
+    if (hasTheBall) {
+      this.p5.stroke(0, 0, 0);
+      this.p5.fill(0, 255, 0);
+      this.p5.ellipse(this.x, this.y, 5);
+    }
   }
 
   drawOhr() {
@@ -212,8 +253,22 @@ class Player {
 
     this.p5.fill(this.color);
     this.p5.ellipse(this.x, this.y, OHR_DIAMETER);
-    if (this.moving == false) {
-      this.animationCounter = (this.animationCounter + 1) % this.ANIMATION_MAX;
+    if (this.ball_is_being_passed) {
+      if (this.dir) {
+        this.animationCounter = Math.min(
+          this.animationCounter + 1,
+          this.ANIMATION_MAX
+        );
+        if (this.animationCounter == this.ANIMATION_MAX) {
+          this.dir = !this.dir;
+        }
+      } else {
+        this.animationCounter = Math.max(this.animationCounter - 1, 0);
+        if (this.animationCounter == 0) {
+          this.dir = !this.dir;
+        }
+      }
+
       this.p5.fill(this.color);
       this.p5.ellipse(this.x, this.y, OHR_DIAMETER + 3 + this.animationCounter);
     }
@@ -264,22 +319,22 @@ class Ball {
     this.nextX = x;
     this.nextY = y;
     this.delta = [0, 0];
-    this.intendedX = x;
-    this.intendedY = y;
+    // this.intendedX = x;
+    // this.intendedY = y;
 
-    this.steps = 10;
+    this.steps = 25;
   }
 
-  move(_x, _y) {
+  move(ball_is_being_passed, _x, _y) {
     [_x, _y] = scalePosition([_x, _y]);
     this.delta = [(_x - this.x) / this.steps, (_y - this.y) / this.steps];
-    console.log({ d: this.delta });
     this.nextX = _x;
     this.nextY = _y;
     this.currStep = 0;
     // this.intendedX = i_x;
     // this.intendedY = i_y;
     this.moving = true;
+    this.ball_is_being_passed = ball_is_being_passed;
   }
 
   animate() {
@@ -294,10 +349,11 @@ class Ball {
       this.delta = [0, 0];
       this.moving = false;
     }
-
-    this.p5.stroke(0, 0, 0);
-    this.p5.fill(0, 255, 0);
-    this.p5.ellipse(this.x, this.x, 5);
+    if (this.ball_is_being_passed) {
+      this.p5.stroke(0, 0, 0);
+      this.p5.fill(0, 0, 0);
+      this.p5.ellipse(this.x, this.y, 5);
+    }
   }
 }
 

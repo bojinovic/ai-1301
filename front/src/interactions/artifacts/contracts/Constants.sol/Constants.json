@@ -1,0 +1,141 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Constants",
+  "sourceName": "contracts/Constants.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "BALL_STEPS_PER_MOVE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BITS_PER_PLAYER_X_POS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BITS_PER_PLAYER_Y_POS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "FIELD_H",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "FIELD_W",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_BALL_DISTANCE_REQUIRED",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "NUMBER_OF_PLAYERS_PER_TEAM",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "NUMBER_OF_TEAMS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "PLAYER_STEPS_PER_MOVE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "STAMINA_REQUIREMENT_FOR_ADVANCEMENT",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061026d806100206000396000f3fe608060405234801561001057600080fd5b506004361061009e5760003560e01c8063705dd6cd11610066578063705dd6cd14610139578063734692a914610157578063ae5c135614610175578063c8067b6f14610193578063e3c8bfb9146101b15761009e565b8063124a96c8146100a357806339febf0c146100c157806345baee55146100df57806349bbc37a146100fd5780634ffdf11e1461011b575b600080fd5b6100ab6101cf565b6040516100b8919061021c565b60405180910390f35b6100c96101d5565b6040516100d6919061021c565b60405180910390f35b6100e76101da565b6040516100f4919061021c565b60405180910390f35b6101056101df565b604051610112919061021c565b60405180910390f35b6101236101e5565b604051610130919061021c565b60405180910390f35b6101416101ea565b60405161014e919061021c565b60405180910390f35b61015f6101ef565b60405161016c919061021c565b60405180910390f35b61017d6101f4565b60405161018a919061021c565b60405180910390f35b61019b6101f9565b6040516101a8919061021c565b60405180910390f35b6101b96101fe565b6040516101c6919061021c565b60405180910390f35b6101f481565b600581565b600781565b6103e881565b600681565b600a81565b600781565b600a81565b600581565b600281565b6000819050919050565b61021681610203565b82525050565b6000602082019050610231600083018461020d565b9291505056fea264697066735822122001d9d86b524b072c82851d2da1af568601b991b53f790e36a726e5478a595e9964736f6c63430008120033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061009e5760003560e01c8063705dd6cd11610066578063705dd6cd14610139578063734692a914610157578063ae5c135614610175578063c8067b6f14610193578063e3c8bfb9146101b15761009e565b8063124a96c8146100a357806339febf0c146100c157806345baee55146100df57806349bbc37a146100fd5780634ffdf11e1461011b575b600080fd5b6100ab6101cf565b6040516100b8919061021c565b60405180910390f35b6100c96101d5565b6040516100d6919061021c565b60405180910390f35b6100e76101da565b6040516100f4919061021c565b60405180910390f35b6101056101df565b604051610112919061021c565b60405180910390f35b6101236101e5565b604051610130919061021c565b60405180910390f35b6101416101ea565b60405161014e919061021c565b60405180910390f35b61015f6101ef565b60405161016c919061021c565b60405180910390f35b61017d6101f4565b60405161018a919061021c565b60405180910390f35b61019b6101f9565b6040516101a8919061021c565b60405180910390f35b6101b96101fe565b6040516101c6919061021c565b60405180910390f35b6101f481565b600581565b600781565b6103e881565b600681565b600a81565b600781565b600a81565b600581565b600281565b6000819050919050565b61021681610203565b82525050565b6000602082019050610231600083018461020d565b9291505056fea264697066735822122001d9d86b524b072c82851d2da1af568601b991b53f790e36a726e5478a595e9964736f6c63430008120033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

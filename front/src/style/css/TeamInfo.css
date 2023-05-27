@@ -23,4 +23,8 @@
 .TeamInfo .Lignup tr th {
   width: 50px;
   padding: 2px 3px;
+}
+.TeamInfo .Lignup .PlayerWithTheBall {
+  background-color: black;
+  color: white;
 }/*# sourceMappingURL=TeamInfo.css.map */

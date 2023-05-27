@@ -2,7 +2,9 @@ import { ethers } from "ethers";
 import * as common from "../utils/common";
 import * as config from "../utils/config";
 
-import GAME_SC_ARTIFACT from "./artifacts/contracts/Game.sol/Game.json";
+import GAME_SC_ARTIFACT from "./artifacts/contracts/GameLogic.sol/GameLogic.json";
+
+const matchId = 0;
 
 const httpProvider = new ethers.providers.JsonRpcProvider();
 const contracts = {
@@ -14,6 +16,7 @@ const contracts = {
 };
 
 const MATCH_INFO = {
+  lastStateFetched: 0,
   currMoveIdx: 0,
   history: [],
 };
@@ -25,101 +28,81 @@ const init = ({ matchIdx }) => {
 const updateHistory = async () => {
   const { moves } = await getCurrMove();
 
-  moves.forEach((move) => MATCH_INFO.history.push(move));
-
-  console.log({ history: MATCH_INFO.history });
+  if (moves && moves[0].id > MATCH_INFO.lastStateFetched) {
+    moves.forEach((move) => MATCH_INFO.history.push(move));
+    MATCH_INFO.lastStateFetched = moves[0].id;
+  }
 
   // if (MATCH_INFO.currMoveIdx === move.idx) {
   //   return;
   // }
 };
 
-let counter = 0;
+let stateCounter = 0;
 const getCurrMove = async () => {
   const moves = [];
 
-  const result = await contracts.game.playout(0, counter);
+  const currMatchStateCount = (
+    await contracts.game.matchIdToMatchStateId(matchId)
+  ).toNumber();
 
-  counter = counter < 10 ? counter + 1 : counter;
-
-  const { move, moveProgression } = result;
-
-  console.log({ moveProgression });
-
-  for (let i = 0; i < moveProgression.length; ++i) {
-    const moveTemp = moveProgression[i];
-    const team1_positions = [];
-    const team2_positions = [];
-
-    for (let playerId = 0; playerId < 10; ++playerId) {
-      console.log(
-        moveTemp.team1_y_positions[playerId],
-        moveTemp.team1_y_positions[playerId].toNumber()
-      );
-      team1_positions.push([
-        moveTemp.team1_x_positions[playerId].toNumber(),
-        moveTemp.team1_y_positions[playerId].toNumber(),
-      ]);
-      team2_positions.push([
-        moveTemp.team2_x_positions[playerId].toNumber(),
-        moveTemp.team2_y_positions[playerId].toNumber(),
-      ]);
-    }
-
-    const playerWithBallId = move.player_id_with_the_ball.toNumber();
-    const ball_position = [
-      moveTemp.team1_x_positions[playerWithBallId].toNumber(),
-      moveTemp.team1_y_positions[playerWithBallId].toNumber(),
-    ];
-
-    console.log({ team1_positions });
-
-    const moveQ = {
-      idx: MATCH_INFO.idx + 1,
-      team1_positions,
-      team2_positions,
-      team_with_ball: 0,
-      player_with_ball: Math.floor(Math.random() * 2),
-      action: "pass", // 'shoot' | 'none' | 'pass',
-      ball_position,
-    };
-
-    moves.push(moveQ);
+  if (stateCounter >= currMatchStateCount - 1) {
+    return {};
   }
 
-  for (let stepId = 0; stepId < move.pass_ball_x_positions.length; ++stepId) {
-    const moveTemp = move;
+  const progression = await contracts.game.getProgression(
+    matchId,
+    stateCounter
+  );
+
+  // console.log({
+  //   move,
+  //   moveProgression,
+  //   M: await contracts.game.matchProgression(0, 3),
+  // });
+
+  for (let i = 0; i < progression.length; ++i) {
+    const progressionStep = progression[i];
     const team1_positions = [];
     const team2_positions = [];
 
     for (let playerId = 0; playerId < 10; ++playerId) {
       team1_positions.push([
-        moveTemp.team1_x_positions[playerId].toNumber(),
-        moveTemp.team1_y_positions[playerId].toNumber(),
+        progressionStep.teamState[0].xPos[playerId].toNumber(),
+        progressionStep.teamState[0].yPos[playerId].toNumber(),
       ]);
       team2_positions.push([
-        moveTemp.team2_x_positions[playerId].toNumber(),
-        moveTemp.team2_y_positions[playerId].toNumber(),
+        progressionStep.teamState[1].xPos[playerId].toNumber(),
+        progressionStep.teamState[1].yPos[playerId].toNumber(),
       ]);
     }
 
+    const playerWithBallId = progressionStep.playerIdWithTheBall.toNumber();
     const ball_position = [
-      moveTemp.pass_ball_x_positions[stepId].toNumber(),
-      moveTemp.pass_ball_y_positions[stepId].toNumber(),
+      progressionStep.ballXPos.toNumber(),
+      progressionStep.ballYPos.toNumber(),
     ];
 
+    console.log({ playerWithBallId });
+
     const moveQ = {
+      ...progressionStep,
       idx: MATCH_INFO.idx + 1,
       team1_positions,
       team2_positions,
-      team_with_ball: 0,
-      player_with_ball: Math.floor(Math.random() * 2),
-      action: "pass", // 'shoot' | 'none' | 'pass'
       ball_position,
+      ball_is_being_passed: false,
+      id: stateCounter - 1,
+      ball_is_being_passed: i > 6,
     };
 
     moves.push(moveQ);
   }
+
+  // moves.forEach((move) => {
+  //   console.log({ ball_position: move.ball_position });
+  // });
+  stateCounter += 1;
 
   return { moves };
 };
