@@ -4,7 +4,9 @@ import chalk from "chalk";
 import terminalImage from "terminal-image";
 import got from "got";
 import figlet from "figlet";
-
+import * as utils from "./utils/index.js";
+import dotenv from "dotenv";
+dotenv.config();
 const app = express();
 const abi = ethers.utils.defaultAbiCoder;
 
@@ -22,6 +24,10 @@ const randomData = () => {
 
 let currData = randomData();
 let currEncodedData = abi.encode(["uint256[6]"], [currData]);
+
+app.get("/p1/run-inference", async (req, res) => {
+  return utils.runInference();
+});
 
 app.get("/p1/generate-random-data", async (req, res) => {
   currData = randomData();
