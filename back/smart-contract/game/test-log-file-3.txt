@@ -1693,3 +1693,140 @@ progression[] 0
 
 
 
+Compiled 2 Solidity files successfully
+
+
+  Game
+    General Testing
+Deployment finished
+	game @ 0x5FbDB2315678afecb367f032d93F642f64180aa3
+	lf_commitmentMockup1 @ 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+	lf_commitmentMockup2 @ 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0
+	lf_revealMockup1 @ 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
+	lf_revealtMockup2 @ 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
+fullfilSeedRequest - called
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    4,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 4,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+{
+  matchInfo: [
+    BigNumber { value: "782491124151251301" },
+    9,
+    BigNumber { value: "0" },
+    seed: BigNumber { value: "782491124151251301" },
+    stage: 9,
+    stateId: BigNumber { value: "0" }
+  ]
+}
+commitmentTick - called
+commitmentTickCalled - passed requirement
+      ✔ Should Play With Chainlink Mockups (3175ms)
+
+
+  1 passing (3s)
+

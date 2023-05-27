@@ -13,7 +13,7 @@ contract Constants {
     uint constant public BITS_PER_PLAYER_Y_POS = 7;
 
 
-    uint constant MAX_BALL_DISTANCE_REQUIRED = 5;
+    uint constant public MAX_BALL_DISTANCE_REQUIRED = 5;
 
     uint constant public FIELD_W = 1000;
     uint constant public FIELD_H = 500;

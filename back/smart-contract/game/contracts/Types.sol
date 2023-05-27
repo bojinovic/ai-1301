@@ -31,6 +31,12 @@ contract Types {
 
     struct MatchState {
         uint[] score;
+
+        uint teamIdWithTheBall;
+        uint playerIdWithTheBall;
+
+        uint ballXPos;
+        uint ballYPos;
     }
 
     struct PlayerStats {
@@ -43,9 +49,6 @@ contract Types {
         PlayerStats[] playerStats;
         uint[] xPos;
         uint[] yPos;
-
-        bool hasTheBall;
-        uint playerIdWithTheBall;
     }
 
     struct TeamMove {
@@ -61,15 +64,21 @@ contract Types {
         bool wantToShoot;
     }
 
-
     struct ProgressionState {
+
+        uint startingTeamIdWithTheBall;
+        uint startingPlayerIdWithTheBall;
+
+        uint teamIdWithTheBall;
+        uint playerIdWithTheBall;
+
         bool ballWasWon;
         uint ballWasWonByTeam;
 
         bool interceptionOccured;
         uint interceptionAchievedByTeam;
-        uint[] ballXPos;
-        uint[] ballYPos;
+        uint ballXPos;
+        uint ballYPos;
 
         bool goalWasScored;
         uint goalWasScoredByTeam;

@@ -5,50 +5,18 @@ const {
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
+const { deploy } = require("./common.js");
+
 describe("Game", function () {
   // We define a fixture to reuse the same setup in every test.
   // We use loadFixture to run this setup once, snapshot that state,
   // and reset Hardhat Network to that snapshot in every test.
-  async function deploy() {
-    const [owner] = await ethers.getSigners();
-
-    const Game = await ethers.getContractFactory("GameLogic");
-    const game = await Game.deploy();
-
-    const CLF_CommitmentMockup = await ethers.getContractFactory(
-      "CommitmentChainlinkFunctionConsumer"
-    );
-    const clf_commitmentMockup1 = await CLF_CommitmentMockup.deploy();
-    const clf_commitmentMockup2 = await CLF_CommitmentMockup.deploy();
-
-    const CLF_RevealMockup = await ethers.getContractFactory(
-      "RevealChainlinkFunctionConsumer"
-    );
-    const clf_revealMockup1 = await CLF_RevealMockup.deploy();
-    const clf_revealMockup2 = await CLF_RevealMockup.deploy();
-
-    console.log(`Deployment finished`);
-    console.log(`\tgame @ ${game.address}`);
-    console.log(`\tlf_commitmentMockup1 @ ${clf_commitmentMockup1.address}`);
-    console.log(`\tlf_commitmentMockup2 @ ${clf_commitmentMockup2.address}`);
-    console.log(`\tlf_revealMockup1 @ ${clf_revealMockup1.address}`);
-    console.log(`\tlf_revealtMockup2 @ ${clf_revealMockup2.address}`);
-
-    return {
-      game,
-      owner,
-      clf_commitmentMockup1,
-      clf_commitmentMockup2,
-      clf_revealMockup1,
-      clf_revealMockup2,
-    };
-  }
 
   describe("General Testing", function () {
     it("Should Playout a Move", async function () {
-      const { game, owner } = await loadFixture(deploy);
+      const { game, owner } = await loadFixture(common.deploy);
 
-      const result = await game.playout(0, 3);
+      const result = await game.getProgression(0, 0);
 
       // console.log({ result });
 
@@ -60,7 +28,7 @@ describe("Game", function () {
       expect(1).to.equal(1);
     });
     it("Should player 0 fromt team 1 should not move", async function () {
-      const { game, owner } = await loadFixture(deploy);
+      const { game, owner } = await loadFixture(common.deploy);
 
       const { move: firstMove } = await game.playout(0, 0);
 
@@ -86,7 +54,7 @@ describe("Game", function () {
         clf_commitmentMockup2,
         clf_revealMockup1,
         clf_revealMockup2,
-      } = await loadFixture(deploy);
+      } = await loadFixture(common.deploy);
 
       await game.createMatch(
         clf_commitmentMockup1.address,
@@ -100,9 +68,17 @@ describe("Game", function () {
         clf_commitmentMockup2.address,
         clf_revealMockup2.address
       );
-      await game.completeInitialization(matchId);
+      // await game.completeInitialization(matchId);
 
-      for (let i = 0; i < 10; i++) {
+      let seed;
+      for (let i = 0; i < 5; i++) {
+        console.log({ matchInfo: await game.matchInfo(matchId) });
+        seed = Math.floor(Math.random() * 123712361278);
+        await clf_commitmentMockup1.updateData(seed);
+        await clf_revealMockup1.updateData(seed);
+        seed = Math.floor(Math.random() * 123712361278);
+        await clf_commitmentMockup2.updateData(seed);
+        await clf_revealMockup2.updateData(seed);
         await game.commitmentTick(matchId);
         await game.updateCommitmentInfo(matchId);
         await game.revealTick(matchId);
@@ -110,17 +86,26 @@ describe("Game", function () {
 
         await game.stateUpdate(matchId);
 
-        const seed1 = Math.floor(Math.random() * 1234567);
-        const seed2 = Math.floor(Math.random() * 1234567);
+        console.log({ progression: await game.getProgression(matchId, i) });
+        console.log({
+          getTeamStateProgression: await game.getTeamStateProgression(
+            matchId,
+            i,
+            0
+          ),
+        });
 
-        clf_commitmentMockup1.updateData(seed1);
-        clf_commitmentMockup2.updateData(seed2);
-        clf_revealMockup1.updateData(seed1);
-        clf_revealMockup2.updateData(seed2);
+        // const seed1 = Math.floor(Math.random() * 1234567);
+        // const seed2 = Math.floor(Math.random() * 1234567);
 
-        const move = await game.matchProgression(0, i);
-        const commitments = await game.commitments(0, i);
-        const reveals = await game.reveals(0, i);
+        // clf_commitmentMockup1.updateData(seed1);
+        // clf_commitmentMockup2.updateData(seed2);
+        // clf_revealMockup1.updateData(seed1);
+        // clf_revealMockup2.updateData(seed2);
+
+        // const move = await game.matchProgression(0, i);
+        // const commitments = await game.commitments(0, i);
+        // const reveals = await game.reveals(0, i);
         // console.log({ move });
 
         // console.log({ commitments });

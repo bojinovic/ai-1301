@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.18;
 
-import "./Constants.sol";
 import "./Types.sol";
 import "./GameLogic.sol";
 import "./interfaces/IChainlinkFunctionConsumer.sol";
@@ -12,7 +11,22 @@ import "hardhat/console.sol";
 
 contract GameManager {
 
-    Constants public constants;
+    uint constant public NUMBER_OF_TEAMS = 2;
+    uint constant public NUMBER_OF_PLAYERS_PER_TEAM = 10;
+
+    uint constant public STAMINA_REQUIREMENT_FOR_ADVANCEMENT = 10;
+    uint constant public PLAYER_STEPS_PER_MOVE = 5;
+    uint constant public BALL_STEPS_PER_MOVE = 7;
+
+    uint constant public BITS_PER_PLAYER_X_POS = 10;
+    uint constant public BITS_PER_PLAYER_Y_POS = 9;
+
+
+    uint constant public MAX_BALL_DISTANCE_REQUIRED = 5;
+
+    uint constant public FIELD_W = 1024;
+    uint constant public FIELD_H = 512;
+
     address public logic;
     address public ticker;
 
@@ -23,12 +37,11 @@ contract GameManager {
     mapping(uint => uint) public seedRequestIdMatchId;
     mapping(uint => uint) public matchIdToMatchStateId;
     mapping(uint => mapping(uint => Types.MatchState)) matchState;
-    mapping(uint => mapping(uint => Types.TeamState[])) public teamState;
+    mapping(uint => mapping(uint => Types.TeamState[])) teamState;
     mapping(uint => mapping(uint => Types.TeamMove[])) public teamMove;
 
     event MatchEnteredStage(uint matchId, Types.MATCH_STAGE stage);
     constructor(address _logic) {
-        constants = new Constants();
         logic = _logic;
     }
 
@@ -38,7 +51,7 @@ contract GameManager {
     ) internal {
 
         if(currMoveId == 0){
-            for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+            for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
                 matchInfo[matchId].commitmentFunctionConsumer.push();
                 matchInfo[matchId].revealFunctionConsumer.push();
             }
@@ -47,12 +60,12 @@ contract GameManager {
         Types.MatchState storage currMatchState = matchState[matchId][currMoveId];
         Types.TeamState[] storage currTeamState = teamState[matchId][currMoveId];
         Types.TeamMove[] storage currTeamMove = teamMove[matchId][currMoveId];
-        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
 
             currMatchState.score.push(0);
 
             currTeamState.push();
-            for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
                 currTeamState[teamId].playerStats.push();
 
                 currTeamState[teamId].xPos.push();
@@ -60,7 +73,7 @@ contract GameManager {
             }
 
             currTeamMove.push();
-            for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
                 currTeamMove[teamId].xPos.push();
                 currTeamMove[teamId].yPos.push();
             }
@@ -160,7 +173,7 @@ contract GameManager {
 
         console.log("commitmentTickCalled - passed requirement");
 
-        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).requestData();
         }
 
@@ -179,14 +192,14 @@ contract GameManager {
             "ERR: Match not in correct stage to receive Commitments!"
         );        
         
-        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             require(
                 IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).dataIsReady(),
                 "ERR: Not all teams have issued commitments!"
             );
         }
 
-        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             _updateTeamMoveCommitments(
                 matchId, 
                 teamId,
@@ -218,7 +231,7 @@ contract GameManager {
             "ERR: Match not in correct stage to fetch Reaveals!"
         );
 
-        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             IChainlinkFunctionConsumer(currMatch.revealFunctionConsumer[teamId]).requestData();
         }
 
@@ -236,14 +249,14 @@ contract GameManager {
             "ERR: Match not in correct stage to receive Reveals!"
         );        
         
-        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             require(
                 IChainlinkFunctionConsumer(currMatch.revealFunctionConsumer[teamId]).dataIsReady(),
                 "ERR: Not all teams have issued commitments!"
             );
         }
 
-        for(uint teamId = 0; teamId < constants.NUMBER_OF_TEAMS(); ++teamId){
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             _updateTeamMove(
                 matchId, 
                 teamId,
@@ -274,18 +287,20 @@ contract GameManager {
 
         (uint seed, uint packedData) = abi.decode(payload, (uint, uint));
 
-        uint SHIFT_STEP = constants.BITS_PER_PLAYER_X_POS() + constants.BITS_PER_PLAYER_Y_POS();
+        uint SHIFT_STEP = BITS_PER_PLAYER_X_POS + BITS_PER_PLAYER_Y_POS;
 
-        for(uint playerId = 0; playerId < constants.NUMBER_OF_PLAYERS_PER_TEAM(); ++playerId){
+        for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
             uint segment = (packedData >> (playerId * SHIFT_STEP));
-            currTeamMove.xPos[playerId] = (segment >> constants.BITS_PER_PLAYER_Y_POS()) & (2**constants.BITS_PER_PLAYER_X_POS() - 1);
-            currTeamMove.yPos[playerId] = segment & (2**constants.BITS_PER_PLAYER_Y_POS() - 1);
+            currTeamMove.xPos[playerId] = (segment >> BITS_PER_PLAYER_Y_POS) & (2**BITS_PER_PLAYER_X_POS - 1);
+            currTeamMove.yPos[playerId] = segment & (2**BITS_PER_PLAYER_Y_POS - 1);
         }
 
-        currTeamMove.wantToShoot = (packedData >> (SHIFT_STEP * constants.NUMBER_OF_PLAYERS_PER_TEAM()) & 1) == 1;
+        currTeamMove.wantToShoot = (packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM) & 1) == 1;
         
-        currTeamMove.wantToPass = (packedData >> (SHIFT_STEP * constants.NUMBER_OF_PLAYERS_PER_TEAM() + 1) & 1) == 1;
-        currTeamMove.receivingPlayerId = (packedData >> (SHIFT_STEP * constants.NUMBER_OF_PLAYERS_PER_TEAM() + 2) & 0xf);
+        currTeamMove.wantToPass = (packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM + 1) & 1) == 1;
+
+        uint potentialReceivingPlayerId = (packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM + 2) & 0xf);
+        currTeamMove.receivingPlayerId = potentialReceivingPlayerId & 7;
     }
 
 }
