@@ -1,5 +1,7 @@
 import Navbar from "./components/Navbar";
 
+import "./style/css/App.css";
+
 import Playout from "./pages/Playout";
 const App = () => {
   return (

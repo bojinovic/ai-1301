@@ -37,8 +37,6 @@ export const superLoop = async (team1, team2, ball) => {
     });
   };
 
-  const f2 = async () => ball.animate();
-
   await f1();
 };
 
@@ -150,7 +148,7 @@ class Team {
     this.whoami = whoami;
     this.team_positions =
       whoami == 1 ? move.team1_positions : move.team2_positions;
-    this.color = whoami == 1 ? "rgba(255, 0, 0, 0.2)" : "rgba(0, 0, 255, 0.2)";
+    this.color = whoami == 1 ? "rgba(255, 0, 0, 0.7)" : "rgba(0, 0, 255, 0.7)";
     this.players = this.team_positions.map((pos, idx) => {
       return new Player(p5, pos[0], pos[1], idx, this.color);
     });
@@ -269,7 +267,7 @@ class Player {
         }
       }
 
-      this.p5.fill(this.color);
+      this.p5.fill(this.color.replace("0.7", "0.2"));
       this.p5.ellipse(this.x, this.y, OHR_DIAMETER + 3 + this.animationCounter);
     }
 
@@ -282,7 +280,7 @@ class Player {
 
   drawArrow() {
     this.p5.stroke(0, 0, 0);
-    this.p5.fill(0, 0, 0, 0.2);
+    this.p5.fill(0, 0, 0, 0.7);
     this.p5.line(this.x, this.y, this.nextX, this.nextY);
     this.p5.ellipse(this.nextX, this.nextY, 2);
   }

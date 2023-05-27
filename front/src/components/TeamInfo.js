@@ -13,6 +13,7 @@ const PLAYER_NAMES = [
   "Milutinovic",
   "Kezman",
   "Zigic",
+  "KQWERQTQ",
 ];
 
 const TeamInfo = ({ teamId }) => {
@@ -35,7 +36,7 @@ const TeamInfo = ({ teamId }) => {
   }
 
   return (
-    <div className="TeamInfo">
+    <div className={`TeamInfo Team${teamId + 1}`}>
       <table className="Lignup">
         <tr className="Head">
           <th className="Name">Name</th>

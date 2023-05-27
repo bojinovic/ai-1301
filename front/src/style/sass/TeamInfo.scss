@@ -1,16 +1,17 @@
 .TeamInfo {
-  margin: 0 auto;
-  justify-content: space-between;
+  margin: 0 10px;
   .Lignup {
+    width: 450px;
+    background-color: rgba(0, 0, 0, 0.01);
     border-collapse: collapse;
 
     .Head {
-      background: rgba(255, 0, 0, 0.7);
-      padding: 3px;
+      padding: 20px 10px;
       color: white;
     }
 
     tr {
+      padding: 1px 10px;
       display: flex;
       justify-content: space-between;
       text-align: center;
@@ -20,7 +21,7 @@
       }
       td,
       th {
-        width: 50px;
+        width: 70px;
         padding: 2px 3px;
       }
     }
@@ -29,5 +30,17 @@
       background-color: black;
       color: white;
     }
+  }
+}
+
+.Team1 {
+  .Head {
+    background: rgba(255, 0, 0, 0.7);
+  }
+}
+
+.Team2 {
+  .Head {
+    background: rgba(0, 0, 255, 0.7);
   }
 }

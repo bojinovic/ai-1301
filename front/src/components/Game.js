@@ -4,7 +4,6 @@ import Sketch from "react-p5";
 import * as common from "../utils/common";
 import { Field, Team, Ball, superLoop } from "../utils/game";
 
-// import { init } from "../utils/game";
 import "../style/css/Game.css";
 import { useEffect } from "react";
 import { MATCH_INFO, updateHistory } from "../interactions/chainData";
@@ -15,7 +14,7 @@ let ball;
 
 const Game = () => {
   useEffect(async () => {
-    setInterval(async () => await updateHistory(), 3000);
+    setInterval(async () => await updateHistory(), 4000);
   }, []);
 
   const setup = async (p5, parentRef) => {
@@ -33,7 +32,7 @@ const Game = () => {
 
     while (!MATCH_INFO.history[0]) await common.delay(1000);
     const move = MATCH_INFO.history[0];
-    teams = [new Team(p5, move, 1), new Team(p5, move, 2)];
+    teams = [new Team(p5, move, 0), new Team(p5, move, 1)];
     ball = new Ball(p5, 0, 10);
   };
   const draw = async (p5) => {
@@ -46,6 +45,9 @@ const Game = () => {
         MATCH_INFO.currMoveIdx + 1 < MATCH_INFO.history.length &&
         MATCH_INFO.history[MATCH_INFO.currMoveIdx]
       ) {
+        // console.log({
+        //   move: MATCH_INFO.history[MATCH_INFO.currMoveIdx],
+        // });
         teams.forEach((t) =>
           t.move(MATCH_INFO.history[MATCH_INFO.currMoveIdx])
         );
@@ -59,6 +61,7 @@ const Game = () => {
         MATCH_INFO.currMoveIdx += 1;
       }
     }
+
     if (teams) {
       await superLoop(teams[0], teams[1], ball);
     }

@@ -4,26 +4,19 @@ const MatchInfo = () => {
   return (
     <div className="MatchInfo">
       <div className="Meta">
-        <div className="T T1">
-          <img
-            className="Crest"
-            src="/images/TeamCrestPlaceholde.svg.webp"
-          ></img>
-          <div className="Name">Wildcats</div>
+        <div className="T T1 T1_Color">
+          <h1 className="Name">Wildcats</h1>
+          <img className="Crest" src="/images/crestPlaceholder.png"></img>
         </div>
-        <div className="Separator"> </div>
-        <div className="T T2">
-          <img
-            className="Crest"
-            src="/images/TeamCrestPlaceholde.svg.webp"
-          ></img>
-          <div className="Name">Calmdogs</div>
+        <div className="Score">
+          <h1 className="T T1">1</h1>
+          <h1 className="Separator">{` : `}</h1>
+          <h1 className="T T2">2</h1>
         </div>
-      </div>
-      <div className="Score">
-        <div className="T T1">1</div>
-        <div className="Separator">:</div>
-        <div className="T T2">2</div>
+        <div className="T T2 T2_Color">
+          <img className="Crest" src="/images/crestPlaceholder.png"></img>
+          <h1 className="Name">Calmdogs</h1>
+        </div>
       </div>
     </div>
   );

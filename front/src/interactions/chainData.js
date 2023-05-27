@@ -39,6 +39,8 @@ const updateHistory = async () => {
 };
 
 let stateCounter = 0;
+let processingStateCounter = -1;
+let proccesedState = true;
 const getCurrMove = async () => {
   const moves = [];
 
@@ -46,10 +48,22 @@ const getCurrMove = async () => {
     await contracts.game.matchIdToMatchStateId(matchId)
   ).toNumber();
 
+  console.log({ stateCounter, currMatchStateCount });
+
   if (stateCounter >= currMatchStateCount - 1) {
     return {};
   }
 
+  if (stateCounter == processingStateCounter) {
+    return {};
+  }
+
+  if (proccesedState == false) {
+    return {};
+  }
+
+  processingStateCounter = stateCounter;
+  proccesedState = false;
   const progression = await contracts.game.getProgression(
     matchId,
     stateCounter
@@ -83,7 +97,7 @@ const getCurrMove = async () => {
       progressionStep.ballYPos.toNumber(),
     ];
 
-    console.log({ playerWithBallId });
+    console.log({ x: team1_positions[0][0] });
 
     const moveQ = {
       ...progressionStep,
@@ -91,9 +105,8 @@ const getCurrMove = async () => {
       team1_positions,
       team2_positions,
       ball_position,
-      ball_is_being_passed: false,
       id: stateCounter - 1,
-      ball_is_being_passed: i > 6,
+      ball_is_being_passed: i > 4,
     };
 
     moves.push(moveQ);
@@ -103,6 +116,8 @@ const getCurrMove = async () => {
   //   console.log({ ball_position: move.ball_position });
   // });
   stateCounter += 1;
+
+  proccesedState = true;
 
   return { moves };
 };
