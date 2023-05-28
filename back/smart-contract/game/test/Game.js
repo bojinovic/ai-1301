@@ -5,7 +5,7 @@ const {
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
-const { deploy } = require("./common.js");
+const common = require("../scripts/common.js");
 
 describe("Game", function () {
   // We define a fixture to reuse the same setup in every test.
@@ -45,6 +45,47 @@ describe("Game", function () {
       expect(lastMove.team1_y_positions[0]).to.equal(
         firstMove.team1_y_positions[0]
       );
+    });
+
+    it.only("Should teams start in correct positions", async function () {
+      const {
+        game,
+        owner,
+        clf_commitmentMockup1,
+        clf_commitmentMockup2,
+        clf_revealMockup1,
+        clf_revealMockup2,
+      } = await loadFixture(common.deploy);
+      const matchId = 0;
+      await game.createMatch(
+        clf_commitmentMockup1.address,
+        clf_revealMockup1.address
+      );
+
+      await game.joinMatch(
+        matchId,
+        clf_commitmentMockup2.address,
+        clf_revealMockup2.address
+      );
+      console.log({ matchInfo: await game.matchInfo(matchId) });
+      seed = Math.floor(Math.random() * 123712361278);
+      await clf_commitmentMockup1.updateData(seed);
+      await clf_revealMockup1.updateData(seed);
+      seed = Math.floor(Math.random() * 123712361278);
+      await clf_commitmentMockup2.updateData(seed);
+      await clf_revealMockup2.updateData(seed);
+      await game.commitmentTick(matchId);
+      await game.updateCommitmentInfo(matchId);
+      await game.revealTick(matchId);
+      await game.updateRevealInfo(matchId);
+
+      const progression = await game.getProgression(0, 0);
+
+      // console.log({ progression });
+
+      console.log(await game.getPlayerPos(0, 0, 0, 0));
+
+      expect(progression[0].teamState[0].xPos[0]).to.equal(512);
     });
     it.only("Should Play With Chainlink Mockups", async function () {
       const {
@@ -87,13 +128,6 @@ describe("Game", function () {
         await game.stateUpdate(matchId);
 
         console.log({ progression: await game.getProgression(matchId, i) });
-        console.log({
-          getTeamStateProgression: await game.getTeamStateProgression(
-            matchId,
-            i,
-            0
-          ),
-        });
 
         // const seed1 = Math.floor(Math.random() * 1234567);
         // const seed2 = Math.floor(Math.random() * 1234567);

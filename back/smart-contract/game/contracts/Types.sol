@@ -47,6 +47,7 @@ contract Types {
 
     struct TeamState {
         PlayerStats[] playerStats;
+        PlayerStats goalKeeperStats;
         uint[] xPos;
         uint[] yPos;
     }
@@ -54,6 +55,8 @@ contract Types {
     struct TeamMove {
         bytes commitment;
         bytes reveal;
+
+        uint seed;
 
         uint[] xPos;
         uint[] yPos;
@@ -65,7 +68,6 @@ contract Types {
     }
 
     struct ProgressionState {
-
         uint startingTeamIdWithTheBall;
         uint startingPlayerIdWithTheBall;
 

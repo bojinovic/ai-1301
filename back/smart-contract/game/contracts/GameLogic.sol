@@ -104,6 +104,15 @@ contract GameLogic {
         require(success, "ERR: updateRevealInfo Delegate call failed!");
     }
 
+    function _initStorageForMatch(uint matchId, uint stateId) internal {
+       
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("_initStorageForMatch(uint256,uint256)", matchId, stateId));
+
+        require(success, "ERR: _initStorageForMatch Delegate call failed!");
+    }
+
+
 
     function stateUpdate(uint matchId) public {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
@@ -114,6 +123,7 @@ contract GameLogic {
         ); 
 
         uint stateId = matchIdToMatchStateId[matchId];
+        _initStorageForMatch(matchId, stateId+1);
         Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
 
         Types.TeamState[] memory currTeamState = progression[progression.length - 1].teamState;
@@ -205,7 +215,7 @@ contract GameLogic {
                 currProgressionState.playerIdWithTheBall = matchState[matchId][stateId].playerIdWithTheBall;
                 currProgressionState.ballXPos = matchState[matchId][stateId].ballXPos;
                 currProgressionState.ballYPos = matchState[matchId][stateId].ballYPos;
-                progression[0] = _copyBallPositionFromBallHolder(progression[0]);
+                currProgressionState = _copyBallPositionFromBallHolder(currProgressionState);
                 continue;
             }
 
@@ -571,5 +581,15 @@ contract GameLogic {
         return 1301;
     }
 
-
+    function getPlayerPos (
+        uint matchId,
+        uint stateId,
+        uint teamId,
+        uint playerId
+    ) public view returns (uint x, uint y){
+        return (
+            teamState[matchId][stateId][teamId].xPos[playerId], 
+            teamState[matchId][stateId][teamId].yPos[playerId]
+        );
+    }
 }
