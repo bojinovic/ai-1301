@@ -37,6 +37,9 @@ contract Types {
 
         uint ballXPos;
         uint ballYPos;
+
+        bool shotWasTaken;
+        bool goalWasScored;
     }
 
     struct PlayerStats {
@@ -82,6 +85,8 @@ contract Types {
         uint ballXPos;
         uint ballYPos;
 
+        bool shotWasTaken;
+        uint teamIdOfTheGoalWhereTheShootWasTaken;
         bool goalWasScored;
         uint goalWasScoredByTeam;
 

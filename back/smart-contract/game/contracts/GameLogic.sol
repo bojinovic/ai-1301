@@ -17,15 +17,17 @@ contract GameLogic {
     uint constant public STAMINA_REQUIREMENT_FOR_ADVANCEMENT = 10;
     uint constant public PLAYER_STEPS_PER_MOVE = 5;
     uint constant public BALL_STEPS_PER_MOVE = 7;
+    uint constant public SHOOT_STEPS = 2;
 
     uint constant public BITS_PER_PLAYER_X_POS = 10;
     uint constant public BITS_PER_PLAYER_Y_POS = 9;
 
+    uint constant public MAX_BALL_DISTANCE_REQUIRED = 25;
 
-    uint constant public MAX_BALL_DISTANCE_REQUIRED = 5;
+    uint constant public FIELD_W = 2 ** BITS_PER_PLAYER_X_POS;
+    uint constant public FIELD_H = 2 ** BITS_PER_PLAYER_Y_POS;
 
-    uint constant public FIELD_W = 1024;
-    uint constant public FIELD_H = 512;
+    uint constant public STAMINA_LOSS_PER_STEP = 2;
 
     address public logic;
     address public ticker;
@@ -38,6 +40,7 @@ contract GameLogic {
     mapping(uint => mapping(uint => Types.MatchState)) matchState;
     mapping(uint => mapping(uint => Types.TeamState[])) teamState;
     mapping(uint => mapping(uint => Types.TeamMove[])) public teamMove;
+    mapping(uint => mapping(uint => bool)) public stateShouldBeSkipped;
 
     address public manager;
 
@@ -112,22 +115,33 @@ contract GameLogic {
         require(success, "ERR: _initStorageForMatch Delegate call failed!");
     }
 
+    function _setPlayersToInitialPositions(uint matchId, uint stateId) internal {
+       
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("_setPlayersToInitialPositions(uint256,uint256)", matchId, stateId));
+
+        require(success, "ERR: _setPlayersToInitialPositions Delegate call failed!");
+    }
 
 
     function stateUpdate(uint matchId) public {
-        Types.MatchInfo storage currMatch = matchInfo[matchId];
+        Types.MatchInfo storage s_currMatch = matchInfo[matchId];
+        uint stateId = matchIdToMatchStateId[matchId];
+        _initStorageForMatch(matchId, stateId+1);
+        Types.MatchState storage s_currMatchState = matchState[matchId][stateId+1];
 
         require(
-            currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
+            s_currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
             "ERR: Match not in correct stage to perform a State update!"
         ); 
 
-        uint stateId = matchIdToMatchStateId[matchId];
-        _initStorageForMatch(matchId, stateId+1);
-        Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
 
-        Types.TeamState[] memory currTeamState = progression[progression.length - 1].teamState;
+        Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
+        Types.ProgressionState memory lastProgressionState = progression[progression.length-1];
+
+        Types.TeamState[] memory currTeamState = lastProgressionState.teamState;
         Types.TeamState[] storage s_currTeamState = teamState[matchId][stateId+1];
+
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
 
             for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
@@ -137,31 +151,48 @@ contract GameLogic {
             }
         }
 
-        matchState[matchId][stateId].teamIdWithTheBall = progression[progression.length - 1].teamIdWithTheBall;
-        matchState[matchId][stateId].playerIdWithTheBall = progression[progression.length - 1].playerIdWithTheBall;
-        matchState[matchId][stateId].ballXPos = progression[progression.length - 1].ballXPos;
-        matchState[matchId][stateId].ballYPos = progression[progression.length - 1].ballYPos;
+        s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
+        s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
+        s_currMatchState.ballXPos = lastProgressionState.ballXPos;
+        s_currMatchState.ballYPos = lastProgressionState.ballYPos;
+        s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
+        s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
+
+        if(lastProgressionState.shotWasTaken){
+            if(lastProgressionState.goalWasScored){
+                 _setPlayersToInitialPositions(matchId, stateId+1);
+                s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
+                s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
+                s_currMatchState.ballXPos = lastProgressionState.ballXPos;
+                s_currMatchState.ballYPos = lastProgressionState.ballYPos;
+                s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
+                s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
+            } else {
+
+            }
+        }
 
         matchIdToMatchStateId[matchId] += 1;
-        currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
 
-        emit MatchEnteredStage(matchId, currMatch.stage);
+        s_currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
+
+        emit MatchEnteredStage(matchId, s_currMatch.stage);
     }
 
-    function getTeamStateProgression(
-        uint matchId,
-        uint stateId,
-        uint progressionStep,
-        uint teamId
-    ) public view returns (
-        uint[10] memory x_pos
-    ){
-        Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
+    // function getTeamStateProgression(
+    //     uint matchId,
+    //     uint stateId,
+    //     uint progressionStep,
+    //     uint teamId
+    // ) public view returns (
+    //     uint[10] memory x_pos
+    // ){
+    //     Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
    
-        for(uint stepId = 0; stepId < NUMBER_OF_PLAYERS_PER_TEAM; ++stepId){
-            x_pos[stepId] = progression[progressionStep].teamState[teamId].xPos[stepId];
-        }
-    }
+    //     for(uint stepId = 0; stepId < NUMBER_OF_PLAYERS_PER_TEAM; ++stepId){
+    //         x_pos[stepId] = progression[progressionStep].teamState[teamId].xPos[stepId];
+    //     }
+    // }
 
     function getProgression(
         uint matchId,
@@ -169,10 +200,12 @@ contract GameLogic {
     ) public view returns (
         Types.ProgressionState[] memory progression
     ){
-        // console.log("getProgression - called");
+        bool shortCircuit = false; //stateShouldBeSkipped[matchId][stateId];
 
         Types.TeamState[] storage s_initialTeamState = teamState[matchId][stateId];
+        Types.TeamState[] memory finalTeamState = teamState[matchId][stateId+1];
         Types.TeamState[] memory initialTeamState = s_initialTeamState;
+        
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             initialTeamState[teamId].playerStats = new Types.PlayerStats[](NUMBER_OF_PLAYERS_PER_TEAM);
 
@@ -193,11 +226,11 @@ contract GameLogic {
         }
 
         progression = new Types.ProgressionState[](
-            PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE
+            PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE + SHOOT_STEPS
         );
 
         uint stepId = 0;
-        for(; stepId < PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE; ++stepId){
+        for(; stepId < PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE + SHOOT_STEPS; ++stepId){
 
             Types.ProgressionState memory currProgressionState = progression[stepId];
             
@@ -215,60 +248,101 @@ contract GameLogic {
                 currProgressionState.playerIdWithTheBall = matchState[matchId][stateId].playerIdWithTheBall;
                 currProgressionState.ballXPos = matchState[matchId][stateId].ballXPos;
                 currProgressionState.ballYPos = matchState[matchId][stateId].ballYPos;
+                // currProgressionState.shotWasTaken = matchState[matchId][stateId].shotWasTaken;
+                // currProgressionState.goalWasScored = matchState[matchId][stateId].goalWasScored;
                 currProgressionState = _copyBallPositionFromBallHolder(currProgressionState);
                 continue;
             }
 
-            progression[stepId].startingTeamIdWithTheBall = progression[stepId-1].startingTeamIdWithTheBall;
-            progression[stepId].startingPlayerIdWithTheBall = progression[stepId-1].startingPlayerIdWithTheBall;
-            progression[stepId].teamIdWithTheBall = progression[stepId-1].teamIdWithTheBall;
-            progression[stepId].playerIdWithTheBall = progression[stepId-1].playerIdWithTheBall;
-            progression[stepId].ballWasWon = progression[stepId-1].ballWasWon;
-            progression[stepId].ballWasWonByTeam = progression[stepId-1].ballWasWonByTeam;
-            progression[stepId].interceptionOccured = progression[stepId-1].interceptionOccured;
-            progression[stepId].interceptionAchievedByTeam = progression[stepId-1].interceptionAchievedByTeam;
-            progression[stepId].ballXPos = progression[stepId-1].ballXPos;
-            progression[stepId].ballYPos = progression[stepId-1].ballYPos;
+            Types.ProgressionState memory prevProgressionState = progression[stepId-1];
+
+            currProgressionState.startingTeamIdWithTheBall = prevProgressionState.startingTeamIdWithTheBall;
+            currProgressionState.startingPlayerIdWithTheBall = prevProgressionState.startingPlayerIdWithTheBall;
+            currProgressionState.teamIdWithTheBall = prevProgressionState.teamIdWithTheBall;
+            currProgressionState.playerIdWithTheBall = prevProgressionState.playerIdWithTheBall;
+            currProgressionState.ballWasWon = prevProgressionState.ballWasWon;
+            currProgressionState.ballWasWonByTeam = prevProgressionState.ballWasWonByTeam;
+            currProgressionState.interceptionOccured = prevProgressionState.interceptionOccured;
+            currProgressionState.interceptionAchievedByTeam = prevProgressionState.interceptionAchievedByTeam;
+            currProgressionState.ballXPos = prevProgressionState.ballXPos;
+            currProgressionState.ballYPos = prevProgressionState.ballYPos;
 
             for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
-                progression[stepId].teamState[teamId].playerStats = new Types.PlayerStats[](NUMBER_OF_PLAYERS_PER_TEAM);
+                currProgressionState.teamState[teamId].playerStats = new Types.PlayerStats[](NUMBER_OF_PLAYERS_PER_TEAM);
 
                 for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
-                    progression[stepId].teamState[teamId].playerStats[playerId] = progression[stepId-1].teamState[teamId].playerStats[playerId];
-                    progression[stepId].teamState[teamId].xPos[playerId] = progression[stepId-1].teamState[teamId].xPos[playerId];
-                    progression[stepId].teamState[teamId].yPos[playerId] = progression[stepId-1].teamState[teamId].yPos[playerId];
+                    currProgressionState.teamState[teamId].playerStats[playerId] = prevProgressionState.teamState[teamId].playerStats[playerId];
+                    currProgressionState.teamState[teamId].xPos[playerId] = prevProgressionState.teamState[teamId].xPos[playerId];
+                    currProgressionState.teamState[teamId].yPos[playerId] = prevProgressionState.teamState[teamId].yPos[playerId];
                 }
             }
 
-            if(stepId < PLAYER_STEPS_PER_MOVE){
-                for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
-                    for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
-                        progression[stepId] = _advancePlayerPosition(
-                            initialTeamState,
-                            currTeamMove, 
-                            teamId, 
-                            playerId,
-                            progression[stepId-1], 
-                            progression[stepId], 
-                            stepId
+            if(shortCircuit == false){
+                if(stepId < PLAYER_STEPS_PER_MOVE){
+                    for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
+                        for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
+                            currProgressionState = _advancePlayerPosition(
+                                initialTeamState,
+                                currTeamMove, 
+                                teamId, 
+                                playerId,
+                                prevProgressionState, 
+                                currProgressionState, 
+                                stepId
+                            );
+                        }
+                    }
+                    currProgressionState = _copyBallPositionFromBallHolder(currProgressionState);
+                    
+                    currProgressionState =_fightForBall(currProgressionState);
+                } else if(stepId < PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE) {
+                    if( currProgressionState.interceptionOccured == false
+                        && currProgressionState.teamIdWithTheBall == progression[0].teamIdWithTheBall){
+                        currProgressionState = _advanceBallPassPosition(
+                            progression[PLAYER_STEPS_PER_MOVE-1],
+                            progression[0].teamIdWithTheBall,
+                            currTeamMove,
+                            prevProgressionState,
+                            currProgressionState,
+                            1 + stepId - PLAYER_STEPS_PER_MOVE
                         );
                     }
                 }
-                progression[stepId] = _copyBallPositionFromBallHolder(progression[stepId]);
-                
-                progression[stepId] =_fightForBall(progression[stepId]);
+            }
+        }
+
+        Types.ProgressionState memory lastProgressionStateBeforeShoot = progression[progression.length-1-SHOOT_STEPS];
+        Types.ProgressionState memory goalKeeperProgressionState = progression[progression.length-2];
+        Types.ProgressionState memory finalProgressionState = progression[progression.length-1];
+
+        if(currTeamMove[lastProgressionStateBeforeShoot.teamIdWithTheBall].wantToShoot){
+            lastProgressionStateBeforeShoot.shotWasTaken 
+                = goalKeeperProgressionState.shotWasTaken
+                = finalProgressionState.shotWasTaken
+                = true;
+            lastProgressionStateBeforeShoot.teamIdOfTheGoalWhereTheShootWasTaken = 1 - lastProgressionStateBeforeShoot.teamIdWithTheBall;
+
+            goalKeeperProgressionState.ballXPos = (lastProgressionStateBeforeShoot.teamIdWithTheBall == 0) ? FIELD_W : 0;
+            goalKeeperProgressionState.ballYPos = FIELD_H / 2;
+
+            finalProgressionState.goalWasScored = _shootScores(lastProgressionStateBeforeShoot);
+            finalProgressionState.teamIdWithTheBall 
+                // = goalKeeperProgressionState.teamIdWithTheBall 
+                = 1 - lastProgressionStateBeforeShoot.teamIdWithTheBall;
+
+            if(finalProgressionState.goalWasScored){
+                finalProgressionState.ballXPos = FIELD_W / 2;
+                finalProgressionState.ballYPos = FIELD_H / 2;
+                finalProgressionState.playerIdWithTheBall = 2;
             } else {
-                if( progression[stepId].interceptionOccured == false
-                    && progression[stepId].teamIdWithTheBall == progression[0].teamIdWithTheBall){
-                    progression[stepId] = _advanceBallPassPosition(
-                        progression[PLAYER_STEPS_PER_MOVE-1],
-                        progression[0].teamIdWithTheBall,
-                        currTeamMove,
-                        progression[stepId-1],
-                        progression[stepId],
-                        1 + stepId - PLAYER_STEPS_PER_MOVE
-                    );
-                }
+                uint receivingPlayerId = 5;
+                finalProgressionState.ballXPos = 
+                    finalProgressionState.teamState[1 - lastProgressionStateBeforeShoot.teamIdWithTheBall]
+                    .xPos[receivingPlayerId];
+                finalProgressionState.ballYPos = 
+                    finalProgressionState.teamState[1 - lastProgressionStateBeforeShoot.teamIdWithTheBall]
+                    .yPos[receivingPlayerId];
+                finalProgressionState.playerIdWithTheBall = receivingPlayerId;
             }
         }
     }
@@ -314,7 +388,7 @@ contract GameLogic {
             prevState.teamState[teamId].playerStats[playerId];
 
         if(true
-            //currPlayerStats.stamina >= STAMINA_REQUIREMENT_FOR_ADVANCEMENT
+            // currPlayerStats.stamina >= STAMINA_LOSS_PER_STEP
             //&& currPlayerStats.speed * PLAYER_STEPS_PER_MOVE >= distance
         ){
             uint[2] memory newPos = [
@@ -335,6 +409,10 @@ contract GameLogic {
                 //player can move
                 nextState.teamState[teamId].xPos[playerId] = newPos[0];
                 nextState.teamState[teamId].yPos[playerId] = newPos[1];
+                nextState.teamState[teamId].playerStats[playerId].stamina = 
+                    (nextState.teamState[teamId].playerStats[playerId].stamina > STAMINA_LOSS_PER_STEP) ?
+                    nextState.teamState[teamId].playerStats[playerId].stamina - STAMINA_LOSS_PER_STEP:
+                    STAMINA_LOSS_PER_STEP;
                 // console.log("newPos: %s %s", newPos[0], newPos[1]);
             }
         }
@@ -431,17 +509,21 @@ contract GameLogic {
                 );
                 if(winningTeamId != initialState.teamIdWithTheBall) {
                     //ball has been intecepted
-                    nextState.ballWasWon = true;
-                    nextState.ballWasWonByTeam = oposingTeamId;
+                    nextState.interceptionOccured = true;
+                    nextState.interceptionAchievedByTeam = oposingTeamId;
+                    nextState.teamIdWithTheBall = winningTeamId;
                     nextState.playerIdWithTheBall = winningPlayerId;
                     nextState.startingTeamIdWithTheBall = teamId;
                     nextState.startingPlayerIdWithTheBall = initialState.startingPlayerIdWithTheBall;
+                    // console.log("INTERCEPTION OCCURED %s", stepId);
+                    // require(false, "YEAH MOFO");
                     break;
                 }
             }
         }
 
-        if(nextState.ballWasWon == false){
+        if(nextState.interceptionOccured == false){
+            nextState.teamIdWithTheBall = teamId;
             nextState.playerIdWithTheBall = wantedMove[teamId].receivingPlayerId;
             nextState.startingTeamIdWithTheBall = teamId;
         }
@@ -574,6 +656,30 @@ contract GameLogic {
         } else {
             winningTeamId = oposingTeamId;
             winningPlayerId = oposingPlayerId;
+        }
+    }
+
+    function _shootScores(
+        Types.ProgressionState memory currState
+    ) internal view returns (
+        bool scored
+    ) {
+        uint playerSkill = currState.teamState[currState.teamIdWithTheBall]
+                                    .playerStats[currState.playerIdWithTheBall]
+                                    .skill;
+
+        uint goalKeeperSkill = currState.teamState[1-currState.teamIdWithTheBall]
+                                    .goalKeeperStats
+                                    .skill;
+
+         uint totalSkill = playerSkill + goalKeeperSkill;
+
+        uint rnd = _getCurrSeed();
+        return true;
+        if(playerSkill < (rnd % totalSkill)){
+            return true;
+        } else {
+            return false;
         }
     }
 

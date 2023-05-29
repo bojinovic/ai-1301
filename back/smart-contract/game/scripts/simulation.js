@@ -30,23 +30,23 @@ const main = async () => {
     clf_revealMockup2.address
   );
 
-  for (let i = 0; i < 35; ++i) {
+  for (let i = 0; i < 135; ++i) {
     seed = ethers.BigNumber.from(ethers.utils.randomBytes(32));
     await clf_commitmentMockup1.updateData(seed);
     await clf_revealMockup1.updateData(seed);
     seed = ethers.BigNumber.from(ethers.utils.randomBytes(32));
     await clf_commitmentMockup2.updateData(seed);
     await clf_revealMockup2.updateData(seed);
-    await game.commitmentTick(matchId);
-    await game.updateCommitmentInfo(matchId);
-    await game.revealTick(matchId);
-    await game.updateRevealInfo(matchId);
+    await game.commitmentTick(matchId, { gasLimit: 30000000 - 1 });
+    await game.updateCommitmentInfo(matchId, { gasLimit: 30000000 - 1 });
+    await game.revealTick(matchId, { gasLimit: 30000000 - 1 });
+    await game.updateRevealInfo(matchId, { gasLimit: 30000000 - 1 });
 
-    const res = await fetch("http://localhost:3000/0/get-commitment");
+    // const res = await fetch("http://localhost:3000/0/get-commitment");
 
     await game.stateUpdate(matchId, { gasLimit: 30000000 - 1 });
-
-    // console.log({ progression: await game.getProgression(matchId, i) });
+    const progression = await game.getProgression(matchId, i);
+    console.log({ xPos: progression[0].teamState[0].xPos });
     // console.log({
     //   getTeamStateProgression: await game.getTeamStateProgression(
     //     matchId,
@@ -55,7 +55,6 @@ const main = async () => {
     //   ),
     // });
   }
-
 };
 
 main().then(() => console.log(`Simulation finished`));

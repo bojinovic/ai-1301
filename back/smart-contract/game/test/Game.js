@@ -127,7 +127,9 @@ describe("Game", function () {
 
         await game.stateUpdate(matchId);
 
-        console.log({ progression: await game.getProgression(matchId, i) });
+        const progression = await game.getProgression(matchId, 0);
+
+        console.log({ qwe: progression[0].teamState[0] });
 
         // const seed1 = Math.floor(Math.random() * 1234567);
         // const seed2 = Math.floor(Math.random() * 1234567);

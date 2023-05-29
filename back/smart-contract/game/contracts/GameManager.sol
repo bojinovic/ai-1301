@@ -17,15 +17,17 @@ contract GameManager {
     uint constant public STAMINA_REQUIREMENT_FOR_ADVANCEMENT = 10;
     uint constant public PLAYER_STEPS_PER_MOVE = 5;
     uint constant public BALL_STEPS_PER_MOVE = 7;
+    uint constant public SHOOT_STEPS = 2;
 
     uint constant public BITS_PER_PLAYER_X_POS = 10;
     uint constant public BITS_PER_PLAYER_Y_POS = 9;
 
+    uint constant public MAX_BALL_DISTANCE_REQUIRED = 25;
 
-    uint constant public MAX_BALL_DISTANCE_REQUIRED = 5;
+    uint constant public FIELD_W = 2 ** BITS_PER_PLAYER_X_POS;
+    uint constant public FIELD_H = 2 ** BITS_PER_PLAYER_Y_POS;
 
-    uint constant public FIELD_W = 1024;
-    uint constant public FIELD_H = 512;
+    uint constant public STAMINA_LOSS_PER_STEP = 2;
 
     address public logic;
     address public ticker;
@@ -38,6 +40,7 @@ contract GameManager {
     mapping(uint => mapping(uint => Types.MatchState)) matchState;
     mapping(uint => mapping(uint => Types.TeamState[])) teamState;
     mapping(uint => mapping(uint => Types.TeamMove[])) public teamMove;
+    mapping(uint => mapping(uint => bool)) public stateShouldBeSkipped;
 
     event MatchEnteredStage(uint matchId, Types.MATCH_STAGE stage);
     constructor(address _logic) {
@@ -120,7 +123,7 @@ contract GameManager {
 
         requestSeed(matchId);
 
-        fullfilSeedRequest(1301, 782491231231231231124151251301);
+        fullfilSeedRequest(1301, 78249123123123123112341212341241512513017312312312311234121234124151251301);
 
         emit MatchEnteredStage(matchId, currMatch.stage);
     }
@@ -149,7 +152,7 @@ contract GameManager {
 
         currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
 
-        console.log("fullfilSeedRequest - called");
+        //console.log("fullfilSeedRequest - called");
 
         emit MatchEnteredStage(seedRequestIdMatchId[requestId], currMatch.stage);
     }
@@ -160,7 +163,7 @@ contract GameManager {
     ) public {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-        console.log("commitmentTick - called");
+        //console.log("commitmentTick - called");
 
         require(
             currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED 
@@ -172,7 +175,7 @@ contract GameManager {
             _createPlayerStats(matchId);
         }
 
-        console.log("commitmentTickCalled - passed requirement");
+        //console.log("commitmentTickCalled - passed requirement");
 
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).requestData();
@@ -181,7 +184,7 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        console.log("commitmentTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
+        //console.log("commitmentTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
 
     }
 
@@ -202,6 +205,7 @@ contract GameManager {
             );
         }
 
+
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             _updateTeamMoveCommitments(
                 matchId, 
@@ -214,7 +218,6 @@ contract GameManager {
 
         emit MatchEnteredStage(matchId, currMatch.stage);
 
-        console.log("updateCommitmentInfo, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
 
     }
 
@@ -223,6 +226,9 @@ contract GameManager {
         uint teamId,
         bytes memory payload
     ) internal {
+
+        console.log("updateCommitmentInfo, matchIdToMatchStateId[matchId] : %s", matchIdToMatchStateId[matchId]);
+
         Types.TeamMove storage currTeamMove = teamMove[matchId][matchIdToMatchStateId[matchId]][teamId];
 
         currTeamMove.commitment = payload;
@@ -244,7 +250,7 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.REVEALS_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        console.log("revealTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
+        //console.log("revealTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
 
     }
     function updateRevealInfo(
@@ -275,7 +281,7 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.REVEAL_RECEIVED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        console.log("updateRevealInfo, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
+        //console.log("updateRevealInfo, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
 
     }
 
@@ -307,7 +313,7 @@ contract GameManager {
             currTeamMove.yPos[playerId] = segment & (2**BITS_PER_PLAYER_Y_POS - 1);
         }
 
-        currTeamMove.wantToShoot = (packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM) & 1) == 1;
+        currTeamMove.wantToShoot = true; //(packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM) & 1) == 1;
         
         currTeamMove.wantToPass = (packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM + 1) & 1) == 1;
 
@@ -318,10 +324,14 @@ contract GameManager {
     function _setPlayersToInitialPositions(
         uint matchId,
         uint stateId
-    ) internal {
+    ) public {
         uint teamId = 0;
 
+        Types.MatchState storage s_currMatchState = matchState[matchId][stateId];
+        s_currMatchState.ballXPos = FIELD_W / 2;
+        s_currMatchState.ballYPos = FIELD_H / 2;
         Types.TeamState storage currTeamState = teamState[matchId][stateId][teamId];
+
         for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
             if(playerId == 0){
                 currTeamState.xPos[playerId] = FIELD_W/2;
@@ -365,7 +375,7 @@ contract GameManager {
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             Types.TeamState storage tState = teamState[matchId][0][teamId];
             for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
-                uint segment = (seed >> ((1+teamId)*playerId*21));
+                uint segment = (seed >> ((1+teamId)*playerId*11));
                 tState.playerStats[playerId].speed = segment & (2**7-1);
                 tState.playerStats[playerId].skill = (segment >> 7) & (2**7-1);
                 tState.playerStats[playerId].stamina = (segment >> 14) & (2**7-1);
