@@ -1,0 +1,48 @@
+.Event {
+  position: fixed; /* Sit on top of the page content */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+}
+.Event .Text {
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  font-size: 50px;
+  color: white;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  text-shadow: 1px;
+  background-color: rgba(0, 0, 0, 0.9);
+  padding: 5px 30px;
+  animation: blink-animation 0.2s steps(5, start) infinite;
+  -webkit-animation: blink-animation 0.2s steps(5, start) infinite;
+}
+.Event .Subtext {
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  font-size: 50px;
+  color: white;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  text-shadow: 1px;
+  background-color: rgba(255, 0, 0, 0.7);
+  padding: 5px 30px;
+  animation: blink-animation 0.2s steps(5, start) infinite;
+  -webkit-animation: blink-animation 0.2s steps(5, start) infinite;
+}
+.Event .SubtextT2 {
+  background-color: rgba(0, 0, 255, 0.7);
+}
+@keyframes blink-animation {
+  to {
+    visibility: hidden;
+  }
+}/*# sourceMappingURL=Event.css.map */

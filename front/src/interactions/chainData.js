@@ -15,6 +15,10 @@ const contracts = {
   ),
 };
 
+export const currentMove = () => {
+  return MATCH_INFO.history[MATCH_INFO.currMoveIdx];
+};
+
 const MATCH_INFO = {
   lastStateFetched: -1,
   currMoveIdx: 0,
@@ -26,31 +30,34 @@ const init = ({ matchIdx }) => {
 };
 
 let goalWasScored = false;
-
-const updateHistory = async () => {
+let fireOnce = true;
+const updateHistory = async ({ updateState }) => {
   const { moves } = await getCurrMove();
-
-  // console.log({ moves });
 
   let firstMove = true;
   if (moves && moves[0].id > MATCH_INFO.lastStateFetched) {
-    moves.forEach((move) => {
-      MATCH_INFO.history.push(move);
+    moves.forEach((move, idx) => {
       if (goalWasScored && firstMove) {
-        for (let i = 0; i < 9; ++i) MATCH_INFO.history.push(move);
+        for (let i = 0; i < 3; ++i) MATCH_INFO.history.push(move);
+        firstMove = false;
       }
-      firstMove = false;
       goalWasScored = move.goalWasScored;
+
+      if (idx == moves.length - 1) {
+        move.goalTakerId =
+          moves[moves.length - 3].playerIdWithTheBall.toNumber();
+        move.scoringTeamId =
+          moves[moves.length - 3].teamIdWithTheBall.toNumber();
+      }
+
+      MATCH_INFO.history.push(move);
     });
+
     MATCH_INFO.lastStateFetched = moves[0].id;
-    // console.log({ xMove: MATCH_INFO.history[0].teamState[0].xPos[0] });
   }
 
-  // console.log(`HistoryLenght`, MATCH_INFO.history.length);
-
-  // if (MATCH_INFO.currMoveIdx === move.idx) {
-  //   return;
-  // }
+  if (fireOnce) updateState({ loading: false });
+  fireOnce = false;
 };
 
 let stateCounter = 0;

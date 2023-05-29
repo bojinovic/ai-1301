@@ -1,0 +1,106 @@
+.MatchIntroOverlay {
+  position: fixed; /* Sit on top of the page content */
+  // display: none; /* Hidden by default */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+  .TextWrapper {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    -webkit-animation: fadeInOut 2s linear infinite;
+    animation: fadeInOut 2s linear infinite;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    .Text {
+      font-size: 50px;
+      color: black;
+
+      text-shadow: 1px;
+      // background-color: rgba(0, 0, 0, 0.9);
+      padding: 5px 30px;
+
+      font-size: 100px;
+      width: 100%;
+      text-align: center;
+    }
+    .TeamWrapper {
+      left: -50%;
+      display: flex;
+      .Team {
+        width: 300px;
+        text-align: center;
+      }
+    }
+  }
+
+  .elementToFadeInAndOut {
+    width: 200px;
+    height: 200px;
+    background: red;
+  }
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @-webkit-keyframes fadeinout {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeinout {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .Subtext {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    font-size: 50px;
+    color: white;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    text-shadow: 1px;
+    background-color: rgba(255, 0, 0, 0.7);
+    padding: 5px 30px;
+    animation: blink-animation 20s steps(115, start) infinite;
+    -webkit-animation: blink-animation 2s steps(15, start) infinite;
+  }
+  @keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
+  @-webkit-keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
+
+  .blink {
+  }
+}

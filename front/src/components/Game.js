@@ -1,5 +1,4 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import Sketch from "react-p5";
 import * as common from "../utils/common";
 import { Field, Team, Ball, superLoop } from "../utils/game";
@@ -11,13 +10,8 @@ import { MATCH_INFO, updateHistory } from "../interactions/chainData";
 let field;
 let teams;
 let ball;
-
-const Game = () => {
-  useEffect(async () => {
-    await updateHistory();
-    setInterval(async () => await updateHistory(), 3000);
-  }, []);
-
+let timeout = 0;
+const Game = ({ stateManager }) => {
   const setup = async (p5, parentRef) => {
     p5.createCanvas(
       common.GAME_SCENE_DIMENSIONS.width,
@@ -43,6 +37,7 @@ const Game = () => {
 
     if (teams && teams[0].isInMotion() == false) {
       if (
+        timeout == 0 &&
         MATCH_INFO.currMoveIdx + 1 < MATCH_INFO.history.length &&
         MATCH_INFO.history[MATCH_INFO.currMoveIdx]
       ) {
@@ -62,12 +57,33 @@ const Game = () => {
         );
 
         MATCH_INFO.currMoveIdx += 1;
+
+        if (
+          !stateManager.state.goalWasScored &&
+          MATCH_INFO.history[MATCH_INFO.currMoveIdx].goalWasScored
+        ) {
+          setTimeout(() => {
+            stateManager.updateState({
+              goalWasScored: true,
+            });
+          }, 800);
+          setTimeout(
+            () =>
+              stateManager.updateState({
+                goalWasScored: false,
+              }),
+            10000
+          );
+
+          timeout = 200;
+        }
       }
     }
 
     if (teams) {
       await superLoop(teams[0], teams[1], ball);
     }
+    timeout = Math.max(0, timeout - 1);
   };
 
   useEffect(() => {
