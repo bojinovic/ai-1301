@@ -14,7 +14,8 @@ let ball;
 
 const Game = () => {
   useEffect(async () => {
-    setInterval(async () => await updateHistory(), 4000);
+    await updateHistory();
+    setInterval(async () => await updateHistory(), 3000);
   }, []);
 
   const setup = async (p5, parentRef) => {
@@ -46,7 +47,9 @@ const Game = () => {
         MATCH_INFO.history[MATCH_INFO.currMoveIdx]
       ) {
         // console.log({
-        //   move: MATCH_INFO.history[MATCH_INFO.currMoveIdx],
+        //   shotWasTaken: MATCH_INFO.history[MATCH_INFO.currMoveIdx].shotWasTaken,
+        //   goalWasScored:
+        //     MATCH_INFO.history[MATCH_INFO.currMoveIdx].goalWasScored,
         // });
         teams.forEach((t) =>
           t.move(MATCH_INFO.history[MATCH_INFO.currMoveIdx])

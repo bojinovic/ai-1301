@@ -35,6 +35,9 @@ export const superLoop = async (team1, team2, ball) => {
     players.forEach(async (player) => {
       player.drawOhr();
     });
+
+    team1.goalKeeper.drawOhr();
+    team2.goalKeeper.drawOhr();
   };
 
   await f1();
@@ -150,8 +153,14 @@ class Team {
       whoami == 1 ? move.team1_positions : move.team2_positions;
     this.color = whoami == 1 ? "rgba(255, 0, 0, 0.7)" : "rgba(0, 0, 255, 0.7)";
     this.players = this.team_positions.map((pos, idx) => {
-      return new Player(p5, pos[0], pos[1], idx, this.color);
+      pos = scalePosition(pos);
+      return new Player(p5, pos[0], pos[1], 11 - idx, this.color);
     });
+
+    const pos = scalePosition(whoami == 1 ? [0, 256] : [1024, 256]);
+    this.goalKeeper = new Player(p5, pos[0], pos[1], "1", this.color);
+
+    console.log({ teamPos: this.team_positions });
     // this.deltas = this.team_positions.map(_ => [0, 0])
   }
 
@@ -189,6 +198,7 @@ class Team {
     this.players.forEach((p, k) => {
       // p.drawNumber();
     });
+    this.goalKeeper.drawOhr();
   }
   isInMotion() {
     return this.players[0].moving;
@@ -242,7 +252,7 @@ class Player {
     if (hasTheBall) {
       this.p5.stroke(0, 0, 0);
       this.p5.fill(0, 255, 0);
-      this.p5.ellipse(this.x, this.y, 5);
+      this.p5.ellipse(this.x, this.y, 8);
     }
   }
 
@@ -271,9 +281,14 @@ class Player {
       this.p5.ellipse(this.x, this.y, OHR_DIAMETER + 3 + this.animationCounter);
     }
 
-    this.p5.textSize(13);
+    this.p5.textSize(10);
     this.p5.fill("rgba(255,255,255,1)");
-    this.p5.text(`${this.number}`, this.x - 4, this.y + 4);
+    if (this.number < 10) {
+      this.p5.text(`${this.number}`, this.x - 3, this.y + 3);
+    } else {
+      this.p5.text(`${this.number}`, this.x - 6, this.y + 3);
+    }
+
     this.p5.fill("rgba(255,255,255,1)");
     this.p5.stroke(0, 0, 0);
   }
@@ -320,7 +335,7 @@ class Ball {
     // this.intendedX = x;
     // this.intendedY = y;
 
-    this.steps = 25;
+    this.steps = 15;
   }
 
   move(ball_is_being_passed, _x, _y) {

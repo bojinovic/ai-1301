@@ -1,3 +1,3 @@
 export const SC_ADDRESSES = {
-  game: "0xA4e9C96b5FfA721223a3f360b9d4d25613c37Fc5",
+  game: "0x2F94C3189edA0e357B23048aEc736F323Ac431f6",
 };
