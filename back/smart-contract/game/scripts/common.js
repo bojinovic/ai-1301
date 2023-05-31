@@ -33,4 +33,48 @@ const deploy = async () => {
   };
 };
 
-module.exports = { deploy };
+const hre = require("hardhat");
+
+const attach = async () => {
+  const Game = await hre.ethers.getContractFactory("GameLogic");
+  const game = await Game.attach(process.env.GAME_SC_ADDRESS);
+
+  let clf_commitmentMockup1,
+    clf_commitmentMockup2,
+    clf_revealMockup1,
+    clf_revealMockup2;
+
+  try {
+    const CLF_CommitmentMockup = await ethers.getContractFactory(
+      "CommitmentChainlinkFunctionConsumer"
+    );
+    clf_commitmentMockup1 = await CLF_CommitmentMockup.attach(
+      process.env.P1_COMMITMENT_FUNCTION_CONSUMER_SC_ADRESS
+    );
+    clf_commitmentMockup2 = await CLF_CommitmentMockup.attach(
+      process.env.P2_COMMITMENT_FUNCTION_CONSUMER_SC_ADRESS
+    );
+
+    const CLF_RevealMockup = await ethers.getContractFactory(
+      "RevealChainlinkFunctionConsumer"
+    );
+    clf_revealMockup1 = await CLF_RevealMockup.attach(
+      process.env.P1_REVEAL_FUNCTION_CONSUMER_SC_ADRESS
+    );
+    clf_revealMockup2 = await CLF_RevealMockup.attach(
+      process.env.P2_REVEAL_FUNCTION_CONSUMER_SC_ADRESS
+    );
+  } catch (err) {
+    console.log({ err });
+  }
+
+  return {
+    game,
+    clf_commitmentMockup1,
+    clf_commitmentMockup2,
+    clf_revealMockup1,
+    clf_revealMockup2,
+  };
+};
+
+module.exports = { deploy, attach };
