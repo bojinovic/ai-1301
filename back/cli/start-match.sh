@@ -1,7 +1,7 @@
-export API_SERVER_PORT=3000
+[ ! -f .env ] || export $(grep -v '^#' .env | xargs)
 
-export AI_MODEL_PATH="/Users/milosbojinovic/Documents/chainlink.spring.2023/back/ai-models/v1"
+export TEAM_ID=1
 
-export TEAM_ID=0
+cd ../smart-contract/game && npx hardhat run scripts/startMatch.js --network $NETWORK
 
-cd ../api-server && nodemon index.js
+cd ../../api-server/ && node index.js
