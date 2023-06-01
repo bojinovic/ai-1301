@@ -37,16 +37,10 @@ const requestConfig = {
   perNodeSecrets: [],
   // ETH wallet key used to sign secrets so they cannot be accessed by a 3rd party
   walletPrivateKey: process.env["PRIVATE_KEY"],
-  secrets: { accessToken: process.env.ACCESS_TOKEN ?? ""},
-  
+  secrets: { accessToken: process.env.ACCESS_TOKEN ?? "", biscuits: process.env.BISCUIT },
+
   // 1337 - 42
-  args: [
-  "SELECT \n"+
-  "CASE WHEN SUM(Points) BETWEEN 100 AND 150 THEN 1 \n" +
-  "WHEN SUM(POINTS) BETWEEN 151 AND 300 THEN 2\n" +
-  "WHEN SUM(POINTS) > 300 THEN 3 ELSE 1 END AS SWORD  \n" +
-  "FROM TEST.GAME_TELEMETRY_ARTHUR \n" +
-  "GROUP BY ItemId", "TEST.GAME_TELEMETRY_ARTHUR"],
+  args: ["SELECT * FROM AI1301.DATA3", "AI1301.DATA3"],
 
   expectedReturnType: ReturnType.uint256,
   // Redundant URLs which point to encrypted off-chain secrets
