@@ -116,6 +116,7 @@ module.exports = {
       nativeCurrencySymbol: "MATIC",
       nativeCurrencyDecimals: 18,
       nativePriceFeed: "0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada",
+      gasPrice: 35000000000,
       mainnet: false,
     },
     sepolia: {

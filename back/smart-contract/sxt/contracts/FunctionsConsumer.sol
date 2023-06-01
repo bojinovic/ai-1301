@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import {Functions, FunctionsClient} from "./dev/functions/FunctionsClient.sol";
 // import "@chainlink/contracts/src/v0.8/dev/functions/FunctionsClient.sol"; // Once published
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+// import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * @notice This contract is a demonstration of using Functions.
  * @notice NOT FOR PRODUCTION USE
  */
-contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, ERC721URIStorage {
+contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorage */{
   using Functions for Functions.Request;
   using Counters for Counters.Counter;
   
@@ -35,8 +35,8 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, ERC721URIStorage 
   // https://github.com/protofire/solhint/issues/242
   // solhint-disable-next-line no-empty-blocks
   // constructor(address oracle) FunctionsClient(oracle) ConfirmedOwner(msg.sender) {}
-  constructor(address oracle) FunctionsClient(oracle) ConfirmedOwner(msg.sender) ERC721("Space & Time dNFT", "SXT-DNFT") {
-    _safeMint(msg.sender, 0);
+  constructor(address oracle) FunctionsClient(oracle) ConfirmedOwner(msg.sender) /*ERC721("Space & Time dNFT", "SXT-DNFT")*/ {
+    // _safeMint(msg.sender, 0);
   }
 
   /**
@@ -84,24 +84,24 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, ERC721URIStorage 
     emit BatchMetadataUpdate(0, type(uint256).max);
   }
   
-  // MINT YO
-  function mintNFT(address to) public onlyOwner {
-    _tokenIdCounter.increment();
-    _safeMint(to, _tokenIdCounter.current());
-  }
+//   // MINT YO
+//   function mintNFT(address to) public onlyOwner {
+//     _tokenIdCounter.increment();
+//     _safeMint(to, _tokenIdCounter.current());
+//   }
 
-// HERE WE ARE  
-  function tokenURI(uint256) public view override(ERC721URIStorage) returns (string memory) {
-    string memory baseURL = "https://cloudflare-ipfs.com/ipfs/QmYxCeAjwBiAHUztrFGt3e4ZZEV8txJdYSzVdk6YTWn84j/";
-    return  string(abi.encodePacked(baseURL, string(Strings.toString(SxTId))));
-  }
+// // HERE WE ARE  
+//   function tokenURI(uint256) public view override(ERC721URIStorage) returns (string memory) {
+//     string memory baseURL = "https://cloudflare-ipfs.com/ipfs/QmYxCeAjwBiAHUztrFGt3e4ZZEV8txJdYSzVdk6YTWn84j/";
+//     return  string(abi.encodePacked(baseURL, string(Strings.toString(SxTId))));
+//   }
 
 
 
- // The following function is an override required by Solidity.
-  function _burn(uint256 tokenId) internal override(ERC721URIStorage) {
-    super._burn(tokenId);
-  }
+//  // The following function is an override required by Solidity.
+//   function _burn(uint256 tokenId) internal override(ERC721URIStorage) {
+//     super._burn(tokenId);
+//   }
 
   /**
    * @notice Allows the Functions oracle address to be updated
