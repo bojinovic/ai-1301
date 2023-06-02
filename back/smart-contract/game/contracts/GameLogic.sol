@@ -15,9 +15,12 @@ contract GameLogic {
     uint constant public NUMBER_OF_PLAYERS_PER_TEAM = 10;
 
     uint constant public STAMINA_REQUIREMENT_FOR_ADVANCEMENT = 10;
+
     uint constant public PLAYER_STEPS_PER_MOVE = 5;
     uint constant public BALL_STEPS_PER_MOVE = 7;
     uint constant public SHOOT_STEPS = 2;
+
+    uint constant public TOTAL_PROGRESSION_STEPS = PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE + SHOOT_STEPS;
 
     uint constant public BITS_PER_PLAYER_X_POS = 10;
     uint constant public BITS_PER_PLAYER_Y_POS = 9;
@@ -29,8 +32,11 @@ contract GameLogic {
 
     uint constant public STAMINA_LOSS_PER_STEP = 2;
 
+    bool public gameIsHalted = false;
+
     address public logic;
     address public ticker;
+    address public sxt;
 
     uint public matchCounter;
 
@@ -48,8 +54,14 @@ contract GameLogic {
 
     constructor() {
         manager = address(new GameManager(address(this)));
+        logic = address(this);
     }
 
+    function setSxT(
+        address _sxt
+    ) public {
+        sxt = _sxt;
+    }
 
     function createMatch(
         address team1_commitmentChainlinkFunctionConsumer, 
@@ -107,6 +119,22 @@ contract GameLogic {
         require(success, "ERR: updateRevealInfo Delegate call failed!");
     }
 
+    function stateUpdateTick(uint matchId) public {
+
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("stateUpdateTick(uint256)", matchId));
+
+        require(success, "ERR: stateUpdateTick Delegate call failed!");
+    }
+
+    function updateStateUpdateInfo(uint matchId) public {
+       
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("updateStateUpdateInfo(uint256)", matchId));
+
+        require(success, "ERR: updateStateUpdateInfo Delegate call failed!");
+    }
+
     function _initStorageForMatch(uint matchId, uint stateId) internal {
        
         (bool success, bytes memory data) = manager.delegatecall(
@@ -125,74 +153,20 @@ contract GameLogic {
 
 
     function stateUpdate(uint matchId) public {
-        Types.MatchInfo storage s_currMatch = matchInfo[matchId];
-        uint stateId = matchIdToMatchStateId[matchId];
-        _initStorageForMatch(matchId, stateId+1);
-        Types.MatchState storage s_currMatchState = matchState[matchId][stateId+1];
+       
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("stateUpdate(uint256)", matchId));
 
-        require(
-            s_currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
-            "ERR: Match not in correct stage to perform a State update!"
-        ); 
-
-
-        Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
-        Types.ProgressionState memory lastProgressionState = progression[progression.length-1];
-
-        Types.TeamState[] memory currTeamState = lastProgressionState.teamState;
-        Types.TeamState[] storage s_currTeamState = teamState[matchId][stateId+1];
-
-        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
-
-            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
-                s_currTeamState[teamId].playerStats[playerId] = currTeamState[teamId].playerStats[playerId];
-                s_currTeamState[teamId].xPos[playerId] = currTeamState[teamId].xPos[playerId];
-                s_currTeamState[teamId].yPos[playerId] = currTeamState[teamId].yPos[playerId];
-            }
-        }
-
-        s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
-        s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
-        s_currMatchState.ballXPos = lastProgressionState.ballXPos;
-        s_currMatchState.ballYPos = lastProgressionState.ballYPos;
-        s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
-        s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
-
-        if(lastProgressionState.shotWasTaken){
-            if(lastProgressionState.goalWasScored){
-                 _setPlayersToInitialPositions(matchId, stateId+1);
-                s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
-                s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
-                s_currMatchState.ballXPos = lastProgressionState.ballXPos;
-                s_currMatchState.ballYPos = lastProgressionState.ballYPos;
-                s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
-                s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
-            } else {
-
-            }
-        }
-
-        matchIdToMatchStateId[matchId] += 1;
-
-        s_currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
-
-        emit MatchEnteredStage(matchId, s_currMatch.stage);
+        require(success, "ERR: stateUpdate Delegate call failed!");
     }
 
-    // function getTeamStateProgression(
-    //     uint matchId,
-    //     uint stateId,
-    //     uint progressionStep,
-    //     uint teamId
-    // ) public view returns (
-    //     uint[10] memory x_pos
-    // ){
-    //     Types.ProgressionState[] memory progression = getProgression(matchId, stateId);
-   
-    //     for(uint stepId = 0; stepId < NUMBER_OF_PLAYERS_PER_TEAM; ++stepId){
-    //         x_pos[stepId] = progression[progressionStep].teamState[teamId].xPos[stepId];
-    //     }
-    // }
+    function dispute(uint matchId, uint stateId) public {
+       
+        (bool success, bytes memory data) = manager.delegatecall(
+            abi.encodeWithSignature("dispute(uint256,uint256)", matchId, stateId));
+
+        require(success, "ERR: dispute Delegate call failed!");
+    }
 
     function getProgression(
         uint matchId,
@@ -226,11 +200,11 @@ contract GameLogic {
         }
 
         progression = new Types.ProgressionState[](
-            PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE + SHOOT_STEPS
+            TOTAL_PROGRESSION_STEPS
         );
 
         uint stepId = 0;
-        for(; stepId < PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE + SHOOT_STEPS; ++stepId){
+        for(; stepId < TOTAL_PROGRESSION_STEPS; ++stepId){
 
             Types.ProgressionState memory currProgressionState = progression[stepId];
             

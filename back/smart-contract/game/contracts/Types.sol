@@ -12,6 +12,7 @@ contract Types {
         COMMITMENTS_RECEIVED,
         REVEALS_FETCHED,
         REVEAL_RECEIVED,
+        STATE_UPDATE_FETCHED,
         STATE_UPDATE_PERFORMED,
         MATCH_ENDED
     }
@@ -40,6 +41,8 @@ contract Types {
 
         bool shotWasTaken;
         bool goalWasScored;
+
+        bytes reportedState;
     }
 
     struct PlayerStats {

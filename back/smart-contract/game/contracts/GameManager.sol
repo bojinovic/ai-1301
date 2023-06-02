@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import "./Types.sol";
 import "./GameLogic.sol";
 import "./interfaces/IChainlinkFunctionConsumer.sol";
+import "./interfaces/IGame.sol";
 
 
 // Uncomment this line to use console.log
@@ -19,6 +20,8 @@ contract GameManager {
     uint constant public BALL_STEPS_PER_MOVE = 7;
     uint constant public SHOOT_STEPS = 2;
 
+    uint constant public TOTAL_PROGRESSION_STEPS = PLAYER_STEPS_PER_MOVE + BALL_STEPS_PER_MOVE + SHOOT_STEPS;
+
     uint constant public BITS_PER_PLAYER_X_POS = 10;
     uint constant public BITS_PER_PLAYER_Y_POS = 9;
 
@@ -29,8 +32,11 @@ contract GameManager {
 
     uint constant public STAMINA_LOSS_PER_STEP = 2;
 
+    bool public gameIsHalted = false;
+
     address public logic;
     address public ticker;
+    address public sxt;
 
     uint public matchCounter;
 
@@ -41,6 +47,8 @@ contract GameManager {
     mapping(uint => mapping(uint => Types.TeamState[])) teamState;
     mapping(uint => mapping(uint => Types.TeamMove[])) public teamMove;
     mapping(uint => mapping(uint => bool)) public stateShouldBeSkipped;
+
+    address public manager;
 
     event MatchEnteredStage(uint matchId, Types.MATCH_STAGE stage);
     constructor(address _logic) {
@@ -285,6 +293,101 @@ contract GameManager {
 
     }
 
+    function stateUpdateTick(
+        uint matchId
+    ) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
+
+        require(
+            currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
+            "ERR: Match not in correct stage to fetch State update!"
+        );
+
+        IChainlinkFunctionConsumer(sxt).requestData();
+
+        currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_FETCHED;
+
+        emit MatchEnteredStage(matchId, currMatch.stage);
+    }
+
+    function updateStateUpdateInfo(
+        uint matchId
+    ) public {
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
+
+        uint stateId = matchIdToMatchStateId[matchId];
+        _initStorageForMatch(matchId, stateId+1);
+
+        require(
+            currMatch.stage == Types.MATCH_STAGE.STATE_UPDATE_FETCHED,
+            "ERR: Match not in correct stage to receive State update!"
+        );        
+        
+        require(
+            IChainlinkFunctionConsumer(sxt).dataIsReady(),
+            "ERR: State update has not been resolved!"
+        );
+
+        console.log("bfr0");
+        _unpackReportedState(
+            matchId,
+            stateId+1,
+            IChainlinkFunctionConsumer(sxt).copyData()
+        );
+        console.log("aftr");
+
+        matchIdToMatchStateId[matchId] += 1;
+
+        currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
+
+        emit MatchEnteredStage(matchId, currMatch.stage);
+
+          console.log("finish");
+    }
+
+    function _unpackReportedState(
+        uint matchId,
+        uint stateId,
+        bytes memory payload
+    ) internal {
+        Types.MatchState storage mState = matchState[matchId][stateId];
+        mState.reportedState = payload;
+
+
+        console.log("01111");
+        (uint team1Pos, uint team2Pos, uint meta) =
+            abi.decode(payload, (uint, uint, uint));
+        console.log("022222");
+        uint[2] memory teamPos = [team1Pos, team2Pos];
+
+        uint SHIFT_STEP = BITS_PER_PLAYER_X_POS + BITS_PER_PLAYER_Y_POS;
+
+
+        console.log("0");
+
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
+            Types.TeamState storage tState = teamState[matchId][stateId][teamId];
+
+            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
+                uint segment = (teamPos[teamId] >> (playerId * SHIFT_STEP));
+                tState.xPos[playerId] = (segment >> BITS_PER_PLAYER_Y_POS) & (2**BITS_PER_PLAYER_X_POS - 1);
+                tState.yPos[playerId] = segment & (2**BITS_PER_PLAYER_Y_POS - 1);
+            }
+        }
+
+        console.log("1");
+
+        mState.teamIdWithTheBall = meta & 1;
+        uint proposedPlayerId =  (meta >> 1) & 15;
+        mState.playerIdWithTheBall = proposedPlayerId < NUMBER_OF_PLAYERS_PER_TEAM ? proposedPlayerId: 0;
+
+        mState.ballXPos = (meta >> 5) & (2**BITS_PER_PLAYER_X_POS - 1);
+        mState.ballYPos = (meta >> (5+BITS_PER_PLAYER_X_POS)) & (2**BITS_PER_PLAYER_Y_POS - 1);
+
+        mState.shotWasTaken = ((meta >> (5+BITS_PER_PLAYER_X_POS+BITS_PER_PLAYER_Y_POS)) & 1) == 1;
+        mState.goalWasScored = ((meta >> (5+BITS_PER_PLAYER_X_POS+BITS_PER_PLAYER_Y_POS+1)) & 1) == 1;
+    }
+
     function _updateTeamMove(
         uint matchId,
         uint teamId,
@@ -385,5 +488,89 @@ contract GameManager {
             tState.goalKeeperStats.stamina = ((seed >> (teamId*21)) >> 14) & (2**7-1);
 
         }
+    }
+
+
+
+    function dispute(
+        uint matchId,
+        uint stateId
+    ) public {
+
+        require(
+            stateId < matchIdToMatchStateId[matchId] - 2,
+            "ERR: The match has not progressed that far"
+        );
+
+        Types.MatchState storage s_actualMatchState = matchState[matchId][stateId+1];
+
+        Types.ProgressionState memory expected = 
+            IGame(logic).getProgression(matchId, stateId)[TOTAL_PROGRESSION_STEPS-1];
+
+        gameIsHalted = 
+            expected.teamIdWithTheBall != s_actualMatchState.teamIdWithTheBall
+            || expected.playerIdWithTheBall != s_actualMatchState.playerIdWithTheBall
+            || expected.ballXPos != s_actualMatchState.ballXPos
+            || expected.ballYPos != s_actualMatchState.ballYPos
+            || expected.shotWasTaken != s_actualMatchState.shotWasTaken
+            || expected.goalWasScored != s_actualMatchState.goalWasScored;
+    }
+
+    function stateUpdate(uint matchId) public {
+        Types.MatchInfo storage s_currMatch = matchInfo[matchId];
+        uint stateId = matchIdToMatchStateId[matchId];
+        _initStorageForMatch(matchId, stateId+1);
+        Types.MatchState storage s_currMatchState = matchState[matchId][stateId+1];
+
+        require(
+            s_currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
+            "ERR: Match not in correct stage to perform a State update!"
+        ); 
+
+        console.log("logic addr %s", logic);
+
+        Types.ProgressionState[] memory progression = IGame(logic).getProgression(matchId, stateId);
+                console.log("12313123123");
+
+        Types.ProgressionState memory lastProgressionState = progression[progression.length-1];
+
+        Types.TeamState[] memory currTeamState = lastProgressionState.teamState;
+        Types.TeamState[] storage s_currTeamState = teamState[matchId][stateId+1];
+
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
+
+            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
+                s_currTeamState[teamId].playerStats[playerId] = currTeamState[teamId].playerStats[playerId];
+                s_currTeamState[teamId].xPos[playerId] = currTeamState[teamId].xPos[playerId];
+                s_currTeamState[teamId].yPos[playerId] = currTeamState[teamId].yPos[playerId];
+            }
+        }
+
+        s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
+        s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
+        s_currMatchState.ballXPos = lastProgressionState.ballXPos;
+        s_currMatchState.ballYPos = lastProgressionState.ballYPos;
+        s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
+        s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
+
+        if(lastProgressionState.shotWasTaken){
+            if(lastProgressionState.goalWasScored){
+                 _setPlayersToInitialPositions(matchId, stateId+1);
+                s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
+                s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
+                s_currMatchState.ballXPos = lastProgressionState.ballXPos;
+                s_currMatchState.ballYPos = lastProgressionState.ballYPos;
+                s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
+                s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
+            } else {
+
+            }
+        }
+
+        matchIdToMatchStateId[matchId] += 1;
+
+        s_currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
+
+        emit MatchEnteredStage(matchId, s_currMatch.stage);
     }
 }

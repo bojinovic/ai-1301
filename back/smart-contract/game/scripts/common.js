@@ -4,6 +4,12 @@ const deploy = async () => {
   const Game = await ethers.getContractFactory("GameLogic");
   const game = await Game.deploy();
 
+  const SxTF_Mockup = await ethers.getContractFactory("SxTFunctionConsumer");
+
+  const sxt_mockup = await SxTF_Mockup.deploy();
+
+  await game.setSxT(sxt_mockup.address);
+
   const CLF_CommitmentMockup = await ethers.getContractFactory(
     "CommitmentChainlinkFunctionConsumer"
   );
@@ -30,6 +36,7 @@ const deploy = async () => {
     clf_commitmentMockup2,
     clf_revealMockup1,
     clf_revealMockup2,
+    sxt_mockup,
   };
 };
 
@@ -42,9 +49,13 @@ const attach = async () => {
   let clf_commitmentMockup1,
     clf_commitmentMockup2,
     clf_revealMockup1,
-    clf_revealMockup2;
+    clf_revealMockup2,
+    sxt_mockup;
 
   try {
+    const SxTF_Mockup = await ethers.getContractFactory("SxTFunctionConsumer");
+
+    sxt_mockup.attach(process.env.SxT_FUNCITON_CONSUMER_SC_ADDRESS);
     const CLF_CommitmentMockup = await ethers.getContractFactory(
       "CommitmentChainlinkFunctionConsumer"
     );

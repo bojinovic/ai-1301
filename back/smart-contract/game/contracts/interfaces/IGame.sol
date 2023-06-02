@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.18;
-
+import "../Types.sol";
 interface IGame {
 
     struct PlayerStats {
@@ -64,5 +64,9 @@ interface IGame {
     function dispute() external;
 
     function playout(uint matchId, uint previousMoveId) external view returns (MoveInfo memory move, MoveInfo[5] memory moveProgression) ;
+
+    function getProgression(uint matchId, uint stateId) external view returns (
+        Types.ProgressionState[] memory progression
+    );
 
 }
