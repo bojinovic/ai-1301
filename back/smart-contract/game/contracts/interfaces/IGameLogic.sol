@@ -5,6 +5,7 @@ pragma solidity ^0.8.18;
 /// @author Milos Bojinovic
 /// @notice Experimental use
 
+
 import "../Types.sol";
 interface IGameLogic {
 

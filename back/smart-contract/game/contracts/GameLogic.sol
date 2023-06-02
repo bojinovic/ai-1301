@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
+import "@chainlink/contracts/src/v0.8/VRFV2WrapperConsumerBase.sol";
+
 import "./Types.sol";
 import "./GameManager.sol";
 import "./interfaces/IGameLogic.sol";
@@ -10,7 +12,7 @@ import "./interfaces/IChainlinkFunctionConsumer.sol";
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-contract GameLogic is IGameLogic {
+contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
 
     uint constant public NUMBER_OF_TEAMS = 2;
     uint constant public NUMBER_OF_PLAYERS_PER_TEAM = 10;
@@ -53,7 +55,11 @@ contract GameLogic is IGameLogic {
 
     event MatchEnteredStage(uint matchId, Types.MATCH_STAGE stage);
 
-    constructor() {
+    constructor()        
+        VRFV2WrapperConsumerBase(
+            0x326C977E6efc84E512bB9C30f76E30c160eD06FB,
+            0x99aFAf084eBA697E584501b8Ed2c0B37Dd136693
+        )  {
         manager = address(new GameManager(address(this)));
         logic = address(this);
     }
@@ -101,6 +107,18 @@ contract GameLogic is IGameLogic {
             abi.encodeWithSignature("joinMatch(uint256,address,address)", matchId, team2_commitmentChainlinkFunctionConsumer, team2_revealChainlinkFunctionConsumer));
 
         require(success, "ERR: joinMatch Delegate call failed!");
+    }
+
+    function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
+        uint matchId = seedRequestIdMatchId[_requestId];
+
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
+
+        currMatch.seed = _randomWords[0];
+
+        currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
+
+        emit MatchEnteredStage(seedRequestIdMatchId[_requestId], currMatch.stage);
     }
 
     /// @notice Initiates the start of Commitment Stage

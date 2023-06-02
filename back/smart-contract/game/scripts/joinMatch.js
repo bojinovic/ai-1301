@@ -9,7 +9,8 @@ const main = async () => {
   await game.joinMatch(
     process.env.MATCH_ID,
     clf_commitmentMockup2.address,
-    clf_revealMockup2.address
+    clf_revealMockup2.address,
+    { gasLimit: 3000000 }
   );
 
   console.log(`Joined the match.`);

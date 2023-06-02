@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
+import "@chainlink/contracts/src/v0.8/VRFV2WrapperConsumerBase.sol";
+
 import "./Types.sol";
 import "./interfaces/IGameLogic.sol";
 import "./interfaces/IChainlinkFunctionConsumer.sol";
@@ -9,7 +11,7 @@ import "./interfaces/IChainlinkFunctionConsumer.sol";
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-contract GameManager {
+contract GameManager is VRFV2WrapperConsumerBase {
 
     uint constant public NUMBER_OF_TEAMS = 2;
     uint constant public NUMBER_OF_PLAYERS_PER_TEAM = 10;
@@ -50,7 +52,11 @@ contract GameManager {
     address public manager;
 
     event MatchEnteredStage(uint matchId, Types.MATCH_STAGE stage);
-    constructor(address _logic) {
+    constructor(address _logic) 
+        VRFV2WrapperConsumerBase(
+            0x326C977E6efc84E512bB9C30f76E30c160eD06FB,
+            0x99aFAf084eBA697E584501b8Ed2c0B37Dd136693
+        ) {
         logic = _logic;
     }
 
@@ -104,38 +110,36 @@ contract GameManager {
 
         currMatch.stage = Types.MATCH_STAGE.P2_JOINED_THE_MATCH;
 
-        requestSeed(matchId);
-
-        fullfilSeedRequest(1301, 78249123123123123112341212341241512513017312312312311234121234124151251301);
-
         emit MatchEnteredStage(matchId, currMatch.stage);
+
+        _requestSeed(matchId);
     }
 
-    function requestSeed(
+    function _requestSeed(
         uint matchId
     ) internal {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-        //TODO: initiate VRF request...
-        seedRequestIdMatchId[1301] = matchId;
+        uint requestId = requestRandomness(100000, 3, 1);
+
+        seedRequestIdMatchId[requestId] = matchId;
 
         currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
-    function fullfilSeedRequest(
-        uint requestId,
-        uint seed
-    ) internal {
-        //TODO: implement VRF fulfill request function
-        Types.MatchInfo storage currMatch = matchInfo[seedRequestIdMatchId[requestId]];
 
-        currMatch.seed = seed;
+    function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
+        uint matchId = seedRequestIdMatchId[_requestId];
+
+        Types.MatchInfo storage currMatch = matchInfo[matchId];
+
+        currMatch.seed = _randomWords[0];
 
         currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
 
-        emit MatchEnteredStage(seedRequestIdMatchId[requestId], currMatch.stage);
+        emit MatchEnteredStage(seedRequestIdMatchId[_requestId], currMatch.stage);
     }
 
     /// @notice Initiates the start of Commitment Stage

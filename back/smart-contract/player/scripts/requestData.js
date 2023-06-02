@@ -1,6 +1,6 @@
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers")
 
-const FC_ADDRESS = "0x1a2de533877a1c4786C85DC93aBFa1B734303D9E"
+const FC_ADDRESS = "0xB9F19407e9F5303A5dE8eEBf302dF9Ad2690f19c"
 async function main() {
   const [owner] = await ethers.getSigners()
 
@@ -8,7 +8,7 @@ async function main() {
   const fc = await FC.attach(FC_ADDRESS)
 
   const result = await fc.requestData({
-    gasLimit: 10000000,
+    gasLimit: 700000,
   })
 
   const dataReady = await fc.dataReady()

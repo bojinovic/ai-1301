@@ -3,7 +3,7 @@ pragma solidity ^0.8.7;
 
 import {Functions, FunctionsClient} from "./dev/functions/FunctionsClient.sol";
 // import "@chainlink/contracts/src/v0.8/dev/functions/FunctionsClient.sol"; // Once published
-import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
+// import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/ConfirmedOwner.sol";
 
 import "./interfaces/IChainlinkFunctionConsumer.sol";
 
@@ -12,7 +12,7 @@ import "./interfaces/IChainlinkFunctionConsumer.sol";
  * @notice This contract is a demonstration of using Functions.
  * @notice NOT FOR PRODUCTION USE
  */
-contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, IChainlinkFunctionConsumer {
+contract FunctionsConsumer is FunctionsClient, IChainlinkFunctionConsumer {
   using Functions for Functions.Request;
 
   bytes32 public latestRequestId;
@@ -29,7 +29,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, IChainlinkFunctio
    */
   // https://github.com/protofire/solhint/issues/242
   // solhint-disable-next-line no-empty-blocks
-  constructor(address oracle) FunctionsClient(oracle) ConfirmedOwner(msg.sender) {}
+  constructor(address oracle) FunctionsClient(oracle) {}
 
 
 
@@ -65,7 +65,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, IChainlinkFunctio
     string[] memory args,
     uint64 subscriptionId,
     uint32 gasLimit
-  ) public onlyOwner returns (bytes32) {
+  ) public  returns (bytes32) {
       require(dataHasBeenRead() == true, "ERR: Previous data has not been read!");
 
     Functions.Request memory req;
@@ -101,11 +101,11 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, IChainlinkFunctio
    *
    * @param oracle New oracle address
    */
-  function updateOracleAddress(address oracle) public onlyOwner {
+  function updateOracleAddress(address oracle) public  {
     setOracle(oracle);
   }
 
-  function addSimulatedRequestId(address oracleAddress, bytes32 requestId) public onlyOwner {
+  function addSimulatedRequestId(address oracleAddress, bytes32 requestId) public  {
     addExternalRequest(oracleAddress, requestId);
   }
 
@@ -113,13 +113,11 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, IChainlinkFunctio
     bool public dataRead1y;
 
     function dataHasBeenRead() public override view returns (bool) {return dataHasBeenRead1;}
-    function dataReady() public override view returns (bool){return dataRead1y;}
+    function dataIsReady() public override view returns (bool){return dataRead1y;}
 
     function requestData () override public {
 
       require(dataHasBeenRead() == true, "ERR: Previous data has not been read!");
-
-      emit UpdateNeeded();
 
       string[] memory arr = new string[](2);
       executeRequest(
@@ -130,7 +128,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, IChainlinkFunctio
 
     function copyData () public override returns (bytes memory){
 
-      require(dataReady() == true, "ERR: Request has not yet been fullfiled!");
+      require(dataIsReady() == true, "ERR: Request has not yet been fullfiled!");
 
       dataHasBeenRead1 = true;
 
