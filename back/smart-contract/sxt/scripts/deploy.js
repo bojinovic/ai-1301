@@ -12,6 +12,4 @@ async function main() {
   console.log(fc.address)
 }
 
-main().then(() => {
-  console.log(`Finished!`)
-})
+main().then(() => {})

@@ -26,7 +26,7 @@ const main = async () => {
     clf_revealMockup2.address
   );
 
-  for (let i = 0; i < 135; ++i) {
+  for (let i = 0; i < 3; ++i) {
     seed = ethers.BigNumber.from(ethers.utils.randomBytes(32));
     await sxt_mockup.updateData(seed);
     seed = ethers.BigNumber.from(ethers.utils.randomBytes(32));
@@ -35,10 +35,10 @@ const main = async () => {
     seed = ethers.BigNumber.from(ethers.utils.randomBytes(32));
     await clf_commitmentMockup2.updateData(seed);
     await clf_revealMockup2.updateData(seed);
-    await game.commitmentTick(matchId, { gasLimit: 30000000 - 1 });
-    await game.updateCommitmentInfo(matchId, { gasLimit: 30000000 - 1 });
-    await game.revealTick(matchId, { gasLimit: 30000000 - 1 });
-    await game.updateRevealInfo(matchId, { gasLimit: 30000000 - 1 });
+    await game.commitmentTick(matchId, { gasLimit: 3000000 - 1 });
+    await game.updateCommitmentInfo(matchId, { gasLimit: 3000000 - 1 });
+    await game.revealTick(matchId, { gasLimit: 3000000 - 1 });
+    await game.updateRevealInfo(matchId, { gasLimit: 3000000 - 1 });
     // await game.stateUpdateTick(matchId, { gasLimit: 30000000 - 1 });
     // await game.updateStateUpdateInfo(matchId, { gasLimit: 30000000 - 1 });
 

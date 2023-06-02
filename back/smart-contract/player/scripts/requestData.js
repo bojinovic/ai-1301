@@ -8,7 +8,7 @@ async function main() {
   const fc = await FC.attach(FC_ADDRESS)
 
   const result = await fc.requestData({
-    gasLimit: 2000000,
+    gasLimit: 10000000,
   })
 
   const dataReady = await fc.dataReady()

@@ -9,13 +9,13 @@ async function main() {
 
   const dataReady = await fc.dataReady()
 
-  const result = await fc.latestResponse()
+  const latestResponse = await fc.latestResponse()
 
   // const result = await fc.copyData({
   //   gasLimit: 1000000,
   // })
 
-  console.log({ result, dataReady })
+  console.log({ dataReady, latestResponse })
 }
 
 main().then(() => {

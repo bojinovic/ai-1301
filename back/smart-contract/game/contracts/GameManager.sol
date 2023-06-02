@@ -8,7 +8,7 @@ import "./interfaces/IGame.sol";
 
 
 // Uncomment this line to use console.log
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract GameManager {
 
@@ -60,7 +60,7 @@ contract GameManager {
         uint currMoveId
     ) public {
 
-        console.log('INITIALIZINGF STORAGE FOR STATEID %s', currMoveId);
+        //console.log('INITIALIZINGF STORAGE FOR STATEID %s', currMoveId);
         if(currMoveId == 0){
             for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
                 matchInfo[matchId].commitmentFunctionConsumer.push();
@@ -160,7 +160,7 @@ contract GameManager {
 
         currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
 
-        //console.log("fullfilSeedRequest - called");
+        ////console.log("fullfilSeedRequest - called");
 
         emit MatchEnteredStage(seedRequestIdMatchId[requestId], currMatch.stage);
     }
@@ -171,7 +171,7 @@ contract GameManager {
     ) public {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-        //console.log("commitmentTick - called");
+        ////console.log("commitmentTick - called");
 
         require(
             currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED 
@@ -183,7 +183,7 @@ contract GameManager {
             _createPlayerStats(matchId);
         }
 
-        //console.log("commitmentTickCalled - passed requirement");
+        ////console.log("commitmentTickCalled - passed requirement");
 
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).requestData();
@@ -192,7 +192,7 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        //console.log("commitmentTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
+        ////console.log("commitmentTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
 
     }
 
@@ -235,7 +235,7 @@ contract GameManager {
         bytes memory payload
     ) internal {
 
-        console.log("updateCommitmentInfo, matchIdToMatchStateId[matchId] : %s", matchIdToMatchStateId[matchId]);
+        // //console.log("updateCommitmentInfo, matchIdToMatchStateId[matchId] : %s", matchIdToMatchStateId[matchId]);
 
         Types.TeamMove storage currTeamMove = teamMove[matchId][matchIdToMatchStateId[matchId]][teamId];
 
@@ -258,7 +258,7 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.REVEALS_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        //console.log("revealTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
+        ////console.log("revealTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
 
     }
     function updateRevealInfo(
@@ -289,7 +289,7 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.REVEAL_RECEIVED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        //console.log("updateRevealInfo, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
+        ////console.log("updateRevealInfo, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
 
     }
 
@@ -328,13 +328,13 @@ contract GameManager {
             "ERR: State update has not been resolved!"
         );
 
-        console.log("bfr0");
+        //console.log("bfr0");
         _unpackReportedState(
             matchId,
             stateId+1,
             IChainlinkFunctionConsumer(sxt).copyData()
         );
-        console.log("aftr");
+        //console.log("aftr");
 
         matchIdToMatchStateId[matchId] += 1;
 
@@ -342,7 +342,7 @@ contract GameManager {
 
         emit MatchEnteredStage(matchId, currMatch.stage);
 
-          console.log("finish");
+          //console.log("finish");
     }
 
     function _unpackReportedState(
@@ -354,16 +354,16 @@ contract GameManager {
         mState.reportedState = payload;
 
 
-        console.log("01111");
+        //console.log("01111");
         (uint team1Pos, uint team2Pos, uint meta) =
             abi.decode(payload, (uint, uint, uint));
-        console.log("022222");
+        //console.log("022222");
         uint[2] memory teamPos = [team1Pos, team2Pos];
 
         uint SHIFT_STEP = BITS_PER_PLAYER_X_POS + BITS_PER_PLAYER_Y_POS;
 
 
-        console.log("0");
+        //console.log("0");
 
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             Types.TeamState storage tState = teamState[matchId][stateId][teamId];
@@ -375,7 +375,7 @@ contract GameManager {
             }
         }
 
-        console.log("1");
+        //console.log("1");
 
         mState.teamIdWithTheBall = meta & 1;
         uint proposedPlayerId =  (meta >> 1) & 15;
@@ -527,10 +527,10 @@ contract GameManager {
             "ERR: Match not in correct stage to perform a State update!"
         ); 
 
-        console.log("logic addr %s", logic);
+        //console.log("logic addr %s", logic);
 
         Types.ProgressionState[] memory progression = IGame(logic).getProgression(matchId, stateId);
-                console.log("12313123123");
+                //console.log("12313123123");
 
         Types.ProgressionState memory lastProgressionState = progression[progression.length-1];
 

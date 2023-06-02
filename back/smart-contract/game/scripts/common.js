@@ -53,9 +53,6 @@ const attach = async () => {
     sxt_mockup;
 
   try {
-    const SxTF_Mockup = await ethers.getContractFactory("SxTFunctionConsumer");
-
-    sxt_mockup.attach(process.env.SxT_FUNCITON_CONSUMER_SC_ADDRESS);
     const CLF_CommitmentMockup = await ethers.getContractFactory(
       "CommitmentChainlinkFunctionConsumer"
     );
@@ -75,6 +72,11 @@ const attach = async () => {
     clf_revealMockup2 = await CLF_RevealMockup.attach(
       process.env.P2_REVEAL_FUNCTION_CONSUMER_SC_ADRESS
     );
+    const SxTF_Mockup = await ethers.getContractFactory("SxTFunctionConsumer");
+
+    const sxt_mockup = SxTF_Mockup.attach(
+      process.env.SxT_FUNCITON_CONSUMER_SC_ADDRESS
+    );
   } catch (err) {
     console.log({ err });
   }
@@ -85,6 +87,7 @@ const attach = async () => {
     clf_commitmentMockup2,
     clf_revealMockup1,
     clf_revealMockup2,
+    sxt_mockup,
   };
 };
 

@@ -7,7 +7,7 @@
 const hre = require("hardhat");
 
 async function main() {
-  const Game = await hre.ethers.getContractFactory("Game");
+  const Game = await hre.ethers.getContractFactory("GameLogic");
   const game = await Game.deploy();
 
   await game.deployed();
