@@ -26,7 +26,7 @@ const main = async () => {
     clf_revealMockup2.address
   );
 
-  for (let i = 0; i < 3; ++i) {
+  for (let i = 0; i < 13; ++i) {
     seed = ethers.BigNumber.from(ethers.utils.randomBytes(32));
     await sxt_mockup.updateData(seed);
     seed = ethers.BigNumber.from(ethers.utils.randomBytes(32));

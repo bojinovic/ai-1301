@@ -1,15 +1,16 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
 import "./Types.sol";
 import "./GameManager.sol";
+import "./interfaces/IGameLogic.sol";
 import "./interfaces/IChainlinkFunctionConsumer.sol";
 
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-contract GameLogic {
+contract GameLogic is IGameLogic {
 
     uint constant public NUMBER_OF_TEAMS = 2;
     uint constant public NUMBER_OF_PLAYERS_PER_TEAM = 10;
@@ -36,7 +37,7 @@ contract GameLogic {
 
     address public logic;
     address public ticker;
-    address public sxt;
+    address public _sxt;
 
     uint public matchCounter;
 
@@ -57,12 +58,21 @@ contract GameLogic {
         logic = address(this);
     }
 
+    /// @notice Sets the address of the Space and Time (SxT) Function Consumer
+    /// @dev This Function consumer should implement IChainlinkFunctionConsumer interface
+    /// @param sxt Address of the deployed SxT Function Consumer
     function setSxT(
-        address _sxt
+        address sxt
     ) public {
-        sxt = _sxt;
+        _sxt = sxt;
     }
 
+    /// @notice Creates a new match and registers the corresponding Function Consumers
+    /// @dev Both Function consumers should implement IChainlinkFunctionConsumer interface
+    /// @param team1_commitmentChainlinkFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Commitment Stage
+    /// @param team1_revealChainlinkFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Reveal Stage
     function createMatch(
         address team1_commitmentChainlinkFunctionConsumer, 
         address team1_revealChainlinkFunctionConsumer
@@ -74,6 +84,13 @@ contract GameLogic {
         require(success, "ERR: createMatch Delegate call failed!");
     }
 
+    /// @notice Joins an already existing Match
+    /// @dev Both Function consumers should implement IChainlinkFunctionConsumer interface
+    /// @param matchId ID of the Match the User wants to join
+    /// @param team2_commitmentChainlinkFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Commitment Stage
+    /// @param team2_revealChainlinkFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Reveal Stage
     function joinMatch(
         uint matchId,
         address team2_commitmentChainlinkFunctionConsumer, 
@@ -86,15 +103,19 @@ contract GameLogic {
         require(success, "ERR: joinMatch Delegate call failed!");
     }
 
-
+    /// @notice Initiates the start of Commitment Stage
+    /// @dev Calls Commitment Function Consumers for both teams
+    /// @param matchId ID of the Match    function commitmentTick(uint matchId) public {
     function commitmentTick(uint matchId) public {
-
         (bool success, bytes memory data) = manager.delegatecall(
             abi.encodeWithSignature("commitmentTick(uint256)", matchId));
 
         require(success, "ERR: commitmentTick Delegate call failed!");
     }
 
+    /// @notice Ends the Commitment Stage and copies the underlying data
+    /// @dev Request for both Commitments has to be resolved (fulfilled)
+    /// @param matchId ID of the Match
     function updateCommitmentInfo(uint matchId) public {
 
         (bool success, bytes memory data) = manager.delegatecall(
@@ -103,6 +124,9 @@ contract GameLogic {
         require(success, "ERR: updateCommitmentInfo Delegate call failed!");
     }
 
+    /// @notice Initiates the start of Reveal Stage
+    /// @dev Calls Reveal Function Consumers for both teams
+    /// @param matchId ID of the Match
     function revealTick(uint matchId) public {
 
         (bool success, bytes memory data) = manager.delegatecall(
@@ -111,6 +135,9 @@ contract GameLogic {
         require(success, "ERR: revealTick Delegate call failed!");
     }
 
+    /// @notice Ends the Reveal Stage and copies the underlying data
+    /// @dev Request for both Reveal has to be resolved (fulfilled)
+    /// @param matchId ID of the Match
     function updateRevealInfo(uint matchId) public {
        
         (bool success, bytes memory data) = manager.delegatecall(
@@ -119,6 +146,9 @@ contract GameLogic {
         require(success, "ERR: updateRevealInfo Delegate call failed!");
     }
 
+    /// @notice Initiates the start of State Update Stage
+    /// @dev Calls SxT Function Consumer
+    /// @param matchId ID of the Match
     function stateUpdateTick(uint matchId) public {
 
         (bool success, bytes memory data) = manager.delegatecall(
@@ -127,6 +157,9 @@ contract GameLogic {
         require(success, "ERR: stateUpdateTick Delegate call failed!");
     }
 
+    /// @notice Ends the State Update Stage and unpacks the received data
+    /// @dev Request for State Update has to be resolved (fulfilled)
+    /// @param matchId ID of the Match
     function updateStateUpdateInfo(uint matchId) public {
        
         (bool success, bytes memory data) = manager.delegatecall(
@@ -135,23 +168,9 @@ contract GameLogic {
         require(success, "ERR: updateStateUpdateInfo Delegate call failed!");
     }
 
-    function _initStorageForMatch(uint matchId, uint stateId) internal {
-       
-        (bool success, bytes memory data) = manager.delegatecall(
-            abi.encodeWithSignature("_initStorageForMatch(uint256,uint256)", matchId, stateId));
-
-        require(success, "ERR: _initStorageForMatch Delegate call failed!");
-    }
-
-    function _setPlayersToInitialPositions(uint matchId, uint stateId) internal {
-       
-        (bool success, bytes memory data) = manager.delegatecall(
-            abi.encodeWithSignature("_setPlayersToInitialPositions(uint256,uint256)", matchId, stateId));
-
-        require(success, "ERR: _setPlayersToInitialPositions Delegate call failed!");
-    }
-
-
+    /// @notice On-chain execution of the State transition
+    /// @dev Used when there's no reporting by SxT because costs a hell of gas :)
+    /// @param matchId ID of the Match
     function stateUpdate(uint matchId) public {
        
         (bool success, bytes memory data) = manager.delegatecall(
@@ -160,6 +179,10 @@ contract GameLogic {
         require(success, "ERR: stateUpdate Delegate call failed!");
     }
 
+    /// @notice Checks whether the reported State is correct
+    /// @dev If the dispute is justified and there's a discrepancy the game is completly halted
+    /// @param matchId ID of the Match
+    /// @param stateId ID of the State after which there's a discrepancy
     function dispute(uint matchId, uint stateId) public {
        
         (bool success, bytes memory data) = manager.delegatecall(
@@ -168,6 +191,11 @@ contract GameLogic {
         require(success, "ERR: dispute Delegate call failed!");
     }
 
+    /// @notice Generates the next Match State and all of the States in between
+    /// @dev Used by .stateUpdate and .dispute
+    /// @param matchId ID of the Match
+    /// @param stateId ID of the previous State
+    /// @return progression A series of intermediate (and final) states
     function getProgression(
         uint matchId,
         uint stateId
@@ -321,6 +349,15 @@ contract GameLogic {
         }
     }
 
+    /// @notice Internal method that Advances the Player's position for one step
+    /// @param initialTeamState Inital State from which the Player will be moving
+    /// @param wantedMove Where the Player 'wants' to move to
+    /// @param teamId ID of the team the Player belongs to
+    /// @param playerId Player's ID
+    /// @param prevState From Where the Player is Moving
+    /// @param nextState Where the Player  will end up
+    /// @param stepId ID of the current Progression Step
+    /// @return Updated State
     function _advancePlayerPosition(
         Types.TeamState[] memory initialTeamState,
         Types.TeamMove[] memory wantedMove,
@@ -394,6 +431,14 @@ contract GameLogic {
         return nextState;
     }
 
+    /// @notice Internal method that Advances the Ball's position while it's being passed
+    /// @param initialState Inital State from which the Player will be moving
+    /// @param wantedMove Where the Player 'wants' to move to
+    /// @param teamId ID of the team the Player belongs to
+    /// @param prevState From Where the Player is Moving
+    /// @param nextState Where the Player  will end up
+    /// @param stepId ID of the current Progression Step
+    /// @return Updated State
     function _advanceBallPassPosition(
         Types.ProgressionState memory initialState,
         uint teamId,
@@ -504,6 +549,10 @@ contract GameLogic {
 
         return nextState;
     }
+
+    /// @notice Internal method that Copies the Ball's position from the Player that has it
+    /// @param currState Current State
+    /// @return Updated State
     function _copyBallPositionFromBallHolder(
         Types.ProgressionState memory currState
     ) internal view returns (
@@ -518,6 +567,9 @@ contract GameLogic {
         return currState;
     }
 
+    /// @notice Internal method that determines who wins the ball in duels
+    /// @param currState Current State
+    /// @return Updated State
     function _fightForBall(
         Types.ProgressionState memory currState
     ) internal view returns (
@@ -560,7 +612,11 @@ contract GameLogic {
 
         return currState;
     }
-
+    /// @notice Internal method that determines the squared distance between a player and a ball
+    /// @param currState Current State
+    /// @param oposingTeamId Player's Team ID
+    /// @param oposingPlayerId Player's ID
+    /// @return distance (squared)
     function _sqrDistanceBetweenBallAndPlayer(
         Types.ProgressionState memory currState,
         uint oposingTeamId,
@@ -582,7 +638,13 @@ contract GameLogic {
 
         distance = xDist ** 2 + yDist ** 2;
     }
-
+    /// @notice Internal method that determines the squared distance between a player and a ball
+    /// @param currState Current State
+    /// @param teamId Player's Team ID
+    /// @param playerId Player's ID
+    /// @param oposingTeamId Opossing Player's Team ID
+    /// @param oposingPlayerId Opossing Player's ID
+    /// @return distance (squared)
     function _sqrDistanceBetweenPlayers(
         Types.ProgressionState memory currState,
         uint teamId,
@@ -609,6 +671,14 @@ contract GameLogic {
         distance = xDist ** 2 + yDist ** 2;
     }
 
+    /// @notice Internal method that determines who wins a duel
+    /// @param currState Current State
+    /// @param teamId Player's Team ID
+    /// @param playerId Player's ID
+    /// @param oposingTeamId Opossing Player's Team ID
+    /// @param oposingPlayerId Opossing Player's ID
+    /// @return winningTeamId ID of the Winning Team 
+    /// @return winningPlayerId ID of the Winning Player 
     function _whoWinsTheDuel(
         Types.ProgressionState memory currState,
         uint teamId,
@@ -632,7 +702,9 @@ contract GameLogic {
             winningPlayerId = oposingPlayerId;
         }
     }
-
+    /// @notice Internal method that determines if a shoot leads to a goal
+    /// @param currState Current State
+    /// @return scored Goal or no Goal
     function _shootScores(
         Types.ProgressionState memory currState
     ) internal view returns (
@@ -661,15 +733,5 @@ contract GameLogic {
         return 1301;
     }
 
-    function getPlayerPos (
-        uint matchId,
-        uint stateId,
-        uint teamId,
-        uint playerId
-    ) public view returns (uint x, uint y){
-        return (
-            teamState[matchId][stateId][teamId].xPos[playerId], 
-            teamState[matchId][stateId][teamId].yPos[playerId]
-        );
-    }
+
 }

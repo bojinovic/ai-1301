@@ -1,10 +1,9 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
 import "./Types.sol";
-import "./GameLogic.sol";
+import "./interfaces/IGameLogic.sol";
 import "./interfaces/IChainlinkFunctionConsumer.sol";
-import "./interfaces/IGame.sol";
 
 
 // Uncomment this line to use console.log
@@ -55,42 +54,12 @@ contract GameManager {
         logic = _logic;
     }
 
-    function _initStorageForMatch(
-        uint matchId, 
-        uint currMoveId
-    ) public {
-
-        //console.log('INITIALIZINGF STORAGE FOR STATEID %s', currMoveId);
-        if(currMoveId == 0){
-            for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
-                matchInfo[matchId].commitmentFunctionConsumer.push();
-                matchInfo[matchId].revealFunctionConsumer.push();
-            }
-        }
-
-        Types.MatchState storage currMatchState = matchState[matchId][currMoveId];
-        Types.TeamState[] storage currTeamState = teamState[matchId][currMoveId];
-        Types.TeamMove[] storage currTeamMove = teamMove[matchId][currMoveId];
-        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
-
-            currMatchState.score.push(0);
-
-            currTeamState.push();
-            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
-                currTeamState[teamId].playerStats.push();
-
-                currTeamState[teamId].xPos.push();
-                currTeamState[teamId].yPos.push();
-            }
-
-            currTeamMove.push();
-            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
-                currTeamMove[teamId].xPos.push();
-                currTeamMove[teamId].yPos.push();
-            }
-        }
-    }
-
+    /// @notice Creates a new match and registers the corresponding Function Consumers
+    /// @dev Both Function consumers should implement IChainlinkFunctionConsumer interface
+    /// @param commitmentFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Commitment Stage
+    /// @param revealFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Reveal Stage
     function createMatch(
         address commitmentFunctionConsumer, 
         address revealFunctionConsumer
@@ -111,7 +80,13 @@ contract GameManager {
 
         emit MatchEnteredStage(matchId, currMatch.stage);
     }
-
+    /// @notice Joins an already existing Match
+    /// @dev Both Function consumers should implement IChainlinkFunctionConsumer interface
+    /// @param matchId ID of the Match the User wants to join
+    /// @param commitmentFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Commitment Stage
+    /// @param revealFunctionConsumer Address of the deployed Function Consumer 
+    ///     that will be used in the Reveal Stage
     function joinMatch(
         uint matchId,
         address commitmentFunctionConsumer, 
@@ -160,18 +135,16 @@ contract GameManager {
 
         currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
 
-        ////console.log("fullfilSeedRequest - called");
-
         emit MatchEnteredStage(seedRequestIdMatchId[requestId], currMatch.stage);
     }
 
-
+    /// @notice Initiates the start of Commitment Stage
+    /// @dev Calls Commitment Function Consumers for both teams
+    /// @param matchId ID of the Match
     function commitmentTick(
         uint matchId
     ) public {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
-
-        ////console.log("commitmentTick - called");
 
         require(
             currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_RECEIVED 
@@ -183,8 +156,6 @@ contract GameManager {
             _createPlayerStats(matchId);
         }
 
-        ////console.log("commitmentTickCalled - passed requirement");
-
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             IChainlinkFunctionConsumer(currMatch.commitmentFunctionConsumer[teamId]).requestData();
         }
@@ -192,10 +163,11 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        ////console.log("commitmentTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
-
     }
 
+    /// @notice Ends the Commitment Stage and copies the underlying data
+    /// @dev Request for both Commitments has to be resolved (fulfilled)
+    /// @param matchId ID of the Match
     function updateCommitmentInfo(
         uint matchId
     ) public {
@@ -212,7 +184,6 @@ contract GameManager {
                 "ERR: Not all teams have issued commitments!"
             );
         }
-
 
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             _updateTeamMoveCommitments(
@@ -234,13 +205,15 @@ contract GameManager {
         uint teamId,
         bytes memory payload
     ) internal {
-
-        // //console.log("updateCommitmentInfo, matchIdToMatchStateId[matchId] : %s", matchIdToMatchStateId[matchId]);
-
         Types.TeamMove storage currTeamMove = teamMove[matchId][matchIdToMatchStateId[matchId]][teamId];
 
         currTeamMove.commitment = payload;
     }
+
+
+    /// @notice Initiates the start of Reveal Stage
+    /// @dev Calls Reveal Function Consumers for both teams
+    /// @param matchId ID of the Match
     function revealTick(
         uint matchId
     ) public {
@@ -258,9 +231,11 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.REVEALS_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        ////console.log("revealTick, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
-
     }
+
+    /// @notice Ends the Reveal Stage and copies the underlying data
+    /// @dev Request for both Reveal has to be resolved (fulfilled)
+    /// @param matchId ID of the Match
     function updateRevealInfo(
         uint matchId
     ) public {
@@ -289,10 +264,11 @@ contract GameManager {
         currMatch.stage = Types.MATCH_STAGE.REVEAL_RECEIVED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-        ////console.log("updateRevealInfo, XPOS for palyer0: %s", teamMove[matchId][0][0].xPos[0]);
-
     }
 
+    /// @notice Initiates the start of State Update Stage
+    /// @dev Calls SxT Function Consumer
+    /// @param matchId ID of the Match
     function stateUpdateTick(
         uint matchId
     ) public {
@@ -310,6 +286,9 @@ contract GameManager {
         emit MatchEnteredStage(matchId, currMatch.stage);
     }
 
+    /// @notice Ends the State Update Stage and unpacks the received data
+    /// @dev Request for State Update has to be resolved (fulfilled)
+    /// @param matchId ID of the Match
     function updateStateUpdateInfo(
         uint matchId
     ) public {
@@ -328,23 +307,109 @@ contract GameManager {
             "ERR: State update has not been resolved!"
         );
 
-        //console.log("bfr0");
         _unpackReportedState(
             matchId,
             stateId+1,
             IChainlinkFunctionConsumer(sxt).copyData()
         );
-        //console.log("aftr");
 
         matchIdToMatchStateId[matchId] += 1;
 
         currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-
-          //console.log("finish");
     }
 
+    /// @notice On-chain execution of the State transition
+    /// @dev Used when there's no reporting by SxT because costs a hell of gas :)
+    /// @param matchId ID of the Match
+    function stateUpdate(uint matchId) public {
+        Types.MatchInfo storage s_currMatch = matchInfo[matchId];
+        uint stateId = matchIdToMatchStateId[matchId];
+        _initStorageForMatch(matchId, stateId+1);
+        Types.MatchState storage s_currMatchState = matchState[matchId][stateId+1];
+
+        require(
+            s_currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
+            "ERR: Match not in correct stage to perform a State update!"
+        ); 
+
+        Types.ProgressionState[] memory progression = IGameLogic(logic).getProgression(matchId, stateId);
+
+        Types.ProgressionState memory lastProgressionState = progression[progression.length-1];
+
+        Types.TeamState[] memory currTeamState = lastProgressionState.teamState;
+        Types.TeamState[] storage s_currTeamState = teamState[matchId][stateId+1];
+
+        for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
+
+            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
+                s_currTeamState[teamId].playerStats[playerId] = currTeamState[teamId].playerStats[playerId];
+                s_currTeamState[teamId].xPos[playerId] = currTeamState[teamId].xPos[playerId];
+                s_currTeamState[teamId].yPos[playerId] = currTeamState[teamId].yPos[playerId];
+            }
+        }
+
+        s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
+        s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
+        s_currMatchState.ballXPos = lastProgressionState.ballXPos;
+        s_currMatchState.ballYPos = lastProgressionState.ballYPos;
+        s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
+        s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
+
+        if(lastProgressionState.shotWasTaken){
+            if(lastProgressionState.goalWasScored){
+                 _setPlayersToInitialPositions(matchId, stateId+1);
+                s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
+                s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
+                s_currMatchState.ballXPos = lastProgressionState.ballXPos;
+                s_currMatchState.ballYPos = lastProgressionState.ballYPos;
+                s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
+                s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
+            } else {
+
+            }
+        }
+
+        matchIdToMatchStateId[matchId] += 1;
+
+        s_currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
+
+        emit MatchEnteredStage(matchId, s_currMatch.stage);
+    }
+    
+    /// @notice Checks whether the reported State is correct
+    /// @dev If the dispute is justified and there's a discrepancy the game is completly halted
+    /// @param matchId ID of the Match
+    /// @param stateId ID of the State after which there's a discrepancy
+    function dispute(
+        uint matchId,
+        uint stateId
+    ) public {
+
+        require(
+            stateId < matchIdToMatchStateId[matchId] - 2,
+            "ERR: The match has not progressed that far"
+        );
+
+        Types.MatchState storage s_actualMatchState = matchState[matchId][stateId+1];
+
+        Types.ProgressionState memory expected = 
+            IGameLogic(logic).getProgression(matchId, stateId)[TOTAL_PROGRESSION_STEPS-1];
+
+        gameIsHalted = 
+            expected.teamIdWithTheBall != s_actualMatchState.teamIdWithTheBall
+            || expected.playerIdWithTheBall != s_actualMatchState.playerIdWithTheBall
+            || expected.ballXPos != s_actualMatchState.ballXPos
+            || expected.ballYPos != s_actualMatchState.ballYPos
+            || expected.shotWasTaken != s_actualMatchState.shotWasTaken
+            || expected.goalWasScored != s_actualMatchState.goalWasScored;
+    }
+
+    /// @notice Unpacks the SxT reported state
+    /// @param matchId ID of the Match
+    /// @param stateId ID of the State that will be unpacked
+    /// @param payload Received Data Payload
     function _unpackReportedState(
         uint matchId,
         uint stateId,
@@ -353,17 +418,12 @@ contract GameManager {
         Types.MatchState storage mState = matchState[matchId][stateId];
         mState.reportedState = payload;
 
-
-        //console.log("01111");
         (uint team1Pos, uint team2Pos, uint meta) =
             abi.decode(payload, (uint, uint, uint));
         //console.log("022222");
         uint[2] memory teamPos = [team1Pos, team2Pos];
 
         uint SHIFT_STEP = BITS_PER_PLAYER_X_POS + BITS_PER_PLAYER_Y_POS;
-
-
-        //console.log("0");
 
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
             Types.TeamState storage tState = teamState[matchId][stateId][teamId];
@@ -374,8 +434,6 @@ contract GameManager {
                 tState.yPos[playerId] = segment & (2**BITS_PER_PLAYER_Y_POS - 1);
             }
         }
-
-        //console.log("1");
 
         mState.teamIdWithTheBall = meta & 1;
         uint proposedPlayerId =  (meta >> 1) & 15;
@@ -388,6 +446,10 @@ contract GameManager {
         mState.goalWasScored = ((meta >> (5+BITS_PER_PLAYER_X_POS+BITS_PER_PLAYER_Y_POS+1)) & 1) == 1;
     }
 
+    /// @notice Updates the Team move based on received Payload
+    /// @param matchId ID of the Match
+    /// @param teamId ID of the Team that will be updated
+    /// @param payload Received Data Payload
     function _updateTeamMove(
         uint matchId,
         uint teamId,
@@ -424,6 +486,9 @@ contract GameManager {
         currTeamMove.receivingPlayerId = potentialReceivingPlayerId & 7;
     }
 
+    /// @notice Sets the player to Start Positions (in storage)
+    /// @param matchId ID of the Match
+    /// @param stateId ID of the State that will be altered
     function _setPlayersToInitialPositions(
         uint matchId,
         uint stateId
@@ -470,6 +535,8 @@ contract GameManager {
         }
     }
 
+    /// @notice Sets the initial player stats based on VRF's Seed
+    /// @param matchId ID of the Match
     function _createPlayerStats(
         uint matchId
     ) internal { 
@@ -486,91 +553,44 @@ contract GameManager {
             tState.goalKeeperStats.speed = ((seed >> (teamId*21)) >> 0) & (2**7-1);
             tState.goalKeeperStats.skill = ((seed >> (teamId*21)) >> 7) & (2**7-1);
             tState.goalKeeperStats.stamina = ((seed >> (teamId*21)) >> 14) & (2**7-1);
-
         }
     }
 
-
-
-    function dispute(
-        uint matchId,
-        uint stateId
+    /// @notice Initializes all the arrays and field for a State
+    /// @param matchId ID of the Match
+    /// @param currMoveId ID of the MOve which will be instantiated
+    function _initStorageForMatch(
+        uint matchId, 
+        uint currMoveId
     ) public {
 
-        require(
-            stateId < matchIdToMatchStateId[matchId] - 2,
-            "ERR: The match has not progressed that far"
-        );
+        if(currMoveId == 0){
+            for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
+                matchInfo[matchId].commitmentFunctionConsumer.push();
+                matchInfo[matchId].revealFunctionConsumer.push();
+            }
+        }
 
-        Types.MatchState storage s_actualMatchState = matchState[matchId][stateId+1];
-
-        Types.ProgressionState memory expected = 
-            IGame(logic).getProgression(matchId, stateId)[TOTAL_PROGRESSION_STEPS-1];
-
-        gameIsHalted = 
-            expected.teamIdWithTheBall != s_actualMatchState.teamIdWithTheBall
-            || expected.playerIdWithTheBall != s_actualMatchState.playerIdWithTheBall
-            || expected.ballXPos != s_actualMatchState.ballXPos
-            || expected.ballYPos != s_actualMatchState.ballYPos
-            || expected.shotWasTaken != s_actualMatchState.shotWasTaken
-            || expected.goalWasScored != s_actualMatchState.goalWasScored;
-    }
-
-    function stateUpdate(uint matchId) public {
-        Types.MatchInfo storage s_currMatch = matchInfo[matchId];
-        uint stateId = matchIdToMatchStateId[matchId];
-        _initStorageForMatch(matchId, stateId+1);
-        Types.MatchState storage s_currMatchState = matchState[matchId][stateId+1];
-
-        require(
-            s_currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
-            "ERR: Match not in correct stage to perform a State update!"
-        ); 
-
-        //console.log("logic addr %s", logic);
-
-        Types.ProgressionState[] memory progression = IGame(logic).getProgression(matchId, stateId);
-                //console.log("12313123123");
-
-        Types.ProgressionState memory lastProgressionState = progression[progression.length-1];
-
-        Types.TeamState[] memory currTeamState = lastProgressionState.teamState;
-        Types.TeamState[] storage s_currTeamState = teamState[matchId][stateId+1];
-
+        Types.MatchState storage currMatchState = matchState[matchId][currMoveId];
+        Types.TeamState[] storage currTeamState = teamState[matchId][currMoveId];
+        Types.TeamMove[] storage currTeamMove = teamMove[matchId][currMoveId];
         for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
 
+            currMatchState.score.push(0);
+
+            currTeamState.push();
             for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
-                s_currTeamState[teamId].playerStats[playerId] = currTeamState[teamId].playerStats[playerId];
-                s_currTeamState[teamId].xPos[playerId] = currTeamState[teamId].xPos[playerId];
-                s_currTeamState[teamId].yPos[playerId] = currTeamState[teamId].yPos[playerId];
+                currTeamState[teamId].playerStats.push();
+
+                currTeamState[teamId].xPos.push();
+                currTeamState[teamId].yPos.push();
+            }
+
+            currTeamMove.push();
+            for(uint playerId = 0; playerId < NUMBER_OF_PLAYERS_PER_TEAM; ++playerId){
+                currTeamMove[teamId].xPos.push();
+                currTeamMove[teamId].yPos.push();
             }
         }
-
-        s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
-        s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
-        s_currMatchState.ballXPos = lastProgressionState.ballXPos;
-        s_currMatchState.ballYPos = lastProgressionState.ballYPos;
-        s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
-        s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
-
-        if(lastProgressionState.shotWasTaken){
-            if(lastProgressionState.goalWasScored){
-                 _setPlayersToInitialPositions(matchId, stateId+1);
-                s_currMatchState.teamIdWithTheBall = lastProgressionState.teamIdWithTheBall;
-                s_currMatchState.playerIdWithTheBall = lastProgressionState.playerIdWithTheBall;
-                s_currMatchState.ballXPos = lastProgressionState.ballXPos;
-                s_currMatchState.ballYPos = lastProgressionState.ballYPos;
-                s_currMatchState.shotWasTaken = lastProgressionState.shotWasTaken;
-                s_currMatchState.goalWasScored = lastProgressionState.goalWasScored;
-            } else {
-
-            }
-        }
-
-        matchIdToMatchStateId[matchId] += 1;
-
-        s_currMatch.stage = Types.MATCH_STAGE.STATE_UPDATE_PERFORMED;
-
-        emit MatchEnteredStage(matchId, s_currMatch.stage);
     }
 }
