@@ -50,9 +50,9 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorag
    * @return Functions request ID
    */
   function executeRequest(
-    string calldata source,
-    bytes calldata secrets,
-    string[] calldata args,
+    string memory source,
+    bytes memory secrets,
+    string[] memory args,
     uint64 subscriptionId,
     uint32 gasLimit
   ) public onlyOwner returns (bytes32) {
@@ -84,24 +84,6 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorag
     emit BatchMetadataUpdate(0, type(uint256).max);
   }
   
-//   // MINT YO
-//   function mintNFT(address to) public onlyOwner {
-//     _tokenIdCounter.increment();
-//     _safeMint(to, _tokenIdCounter.current());
-//   }
-
-// // HERE WE ARE  
-//   function tokenURI(uint256) public view override(ERC721URIStorage) returns (string memory) {
-//     string memory baseURL = "https://cloudflare-ipfs.com/ipfs/QmYxCeAjwBiAHUztrFGt3e4ZZEV8txJdYSzVdk6YTWn84j/";
-//     return  string(abi.encodePacked(baseURL, string(Strings.toString(SxTId))));
-//   }
-
-
-
-//  // The following function is an override required by Solidity.
-//   function _burn(uint256 tokenId) internal override(ERC721URIStorage) {
-//     super._burn(tokenId);
-//   }
 
   /**
    * @notice Allows the Functions oracle address to be updated
@@ -115,4 +97,41 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorag
   function addSimulatedRequestId(address oracleAddress, bytes32 requestId) public onlyOwner {
     addExternalRequest(oracleAddress, requestId);
   }
+
+  string public _source;
+  bytes public _secrets;
+  string[] public _args;
+  uint64 _subId;
+  uint32 _gasLimit;
+
+  function setMetadata(
+    string memory source,
+    bytes memory secrets,
+    string[] memory args,
+    uint64 subscriptionId,
+    uint32 gasLimit
+  ) public {
+    _source = source;
+    _secrets = secrets;
+    for(uint i = 0; i < args.length; ++i){
+      _args.push(args[i]);
+    }
+    _subId = subscriptionId;
+    _gasLimit = gasLimit;
+  }
+
+    function requestData () public {
+
+      string[] memory args = new string[](2);
+      for(uint i = 0; i < _args.length; ++i){
+        args[i] = _args[i];
+      }
+      executeRequest(
+        _source,
+        _secrets,
+        args, 
+        _subId, 
+        _gasLimit);
+    }
+
 }
