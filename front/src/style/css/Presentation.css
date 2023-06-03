@@ -1,0 +1,69 @@
+@font-face {
+  font-family: mySecondFont;
+  src: url(font1.otf);
+}
+.Presentation .Intro {
+  text-align: center;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.Presentation .Intro .Logo {
+  font-size: 200px;
+  margin-bottom: 50px;
+}
+.Presentation .Intro .SubText {
+  font-family: mySecondFont;
+  font-size: 40px;
+}
+.Presentation .Slide {
+  text-align: left;
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+}
+.Presentation .Slide .Header {
+  font-size: 150px;
+  margin-bottom: 50px;
+  margin-top: 0;
+}
+.Presentation .Slide .Content {
+  font-family: mySecondFont;
+  padding: 300px 300px;
+  text-align: center;
+  font-size: 55px;
+  font-weight: 50;
+}
+.Presentation .Slide .Content .Image {
+  width: 60%;
+  height: 30%;
+}
+.Presentation .Slide .Content2 {
+  font-family: mySecondFont;
+  padding: 50px 300px;
+  text-align: left;
+  font-size: 55px;
+  font-weight: 50;
+  padding-bottom: 0;
+}
+.Presentation .Slide .Content3 {
+  padding: 0px 300px;
+  text-align: left;
+  font-size: 55px;
+  font-weight: 50;
+  margin: 0 auto;
+}
+.Presentation .Slide .Content3 img {
+  position: absolute;
+  margin: 0 auto;
+  width: 40%;
+  left: 30%;
+}
+.Presentation .Slide br {
+  height: 10px;
+}
+.Presentation .Slide li {
+  font-size: 30px;
+}/*# sourceMappingURL=Presentation.css.map */

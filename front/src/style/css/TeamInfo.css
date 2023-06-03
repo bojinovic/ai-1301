@@ -36,9 +36,9 @@
 }
 
 .Team1 .Head {
-  background: rgba(255, 0, 0, 0.7);
+  background: rgb(255, 0, 0);
 }
 
 .Team2 .Head {
-  background: rgba(0, 0, 255, 0.7);
+  background: rgb(0, 0, 255);
 }/*# sourceMappingURL=TeamInfo.css.map */

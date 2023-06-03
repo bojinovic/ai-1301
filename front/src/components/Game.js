@@ -41,11 +41,6 @@ const Game = ({ stateManager }) => {
         MATCH_INFO.currMoveIdx + 1 < MATCH_INFO.history.length &&
         MATCH_INFO.history[MATCH_INFO.currMoveIdx]
       ) {
-        // console.log({
-        //   shotWasTaken: MATCH_INFO.history[MATCH_INFO.currMoveIdx].shotWasTaken,
-        //   goalWasScored:
-        //     MATCH_INFO.history[MATCH_INFO.currMoveIdx].goalWasScored,
-        // });
         teams.forEach((t) =>
           t.move(MATCH_INFO.history[MATCH_INFO.currMoveIdx])
         );

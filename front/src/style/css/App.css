@@ -8,9 +8,9 @@ body {
 }
 
 .T1_Color {
-  color: rgba(255, 0, 0, 0.7);
+  color: rgb(255, 0, 0);
 }
 
 .T2_Color {
-  color: rgba(0, 0, 255, 0.7);
+  color: rgb(0, 0, 255);
 }/*# sourceMappingURL=App.css.map */

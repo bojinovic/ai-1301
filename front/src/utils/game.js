@@ -26,7 +26,7 @@ export const superLoop = async (team1, team2, ball) => {
       player.progress(hasTheBall);
     });
     players.forEach(async (player) => {
-      // player.drawArrow();
+      player.drawArrow();
     });
     players.forEach(async (player) => {
       player.drawOhr();
@@ -147,7 +147,7 @@ class Team {
     this.whoami = whoami;
     this.team_positions =
       whoami == 1 ? move.team1_positions : move.team2_positions;
-    this.color = whoami == 1 ? "rgba(255, 0, 0, 0.7)" : "rgba(0, 0, 255, 0.7)";
+    this.color = whoami == 1 ? "rgba(255, 0, 0, 1)" : "rgba(0, 0, 255, 1)";
     this.players = this.team_positions.map((pos, idx) => {
       pos = scalePosition(pos);
       return new Player(p5, pos[0], pos[1], 11 - idx, this.color);
@@ -182,7 +182,7 @@ class Team {
       p.progress(hasTheBall);
     });
     this.players.forEach((p, k) => {
-      // p.drawArrow();
+      p.drawArrow();
     });
     this.players.forEach((p, k) => {
       p.drawOhr();
@@ -273,7 +273,7 @@ class Player {
         }
       }
 
-      this.p5.fill(this.color.replace("0.7", "0.2"));
+      this.p5.fill(this.color.replace("1", "0.2"));
       this.p5.ellipse(this.x, this.y, OHR_DIAMETER + 3 + this.animationCounter);
     }
 

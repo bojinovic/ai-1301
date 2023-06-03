@@ -1,4 +1,11 @@
+@font-face {
+  font-family: mySecondFont;
+  src: url(font1.otf);
+  // src: url();
+}
+
 .Navbar {
+  padding: 0 50px;
   display: flex;
   justify-content: space-between;
   background: rgb(0, 0, 0);
@@ -10,15 +17,18 @@
   color: black;
 
   .Logo {
-    margin: 5px 10px;
+    margin: 0px 0px;
+    font-size: 20px;
   }
 
   .PageList {
+    font-family: mySecondFont;
+
     display: flex;
     justify-content: space-around;
-    margin: 5px 10px;
+    margin: 5px 20px;
     .Entry {
-      margin: 0px 10px;
+      margin: 7px 10px;
     }
   }
 }
