@@ -8,4 +8,4 @@ const main = async () => {
   });
 };
 
-main().then(() => console.log());
+main().then(() => {});

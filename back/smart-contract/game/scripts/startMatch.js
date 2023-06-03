@@ -5,16 +5,18 @@ const main = async () => {
     await common.attach();
 
   console.log(
-    `Staring the match. MATCH_ID = ${(await game.matchCounter()).toNumber()}`
+    `Starting the match. MATCH_ID = ${(await game.matchCounter()).toNumber()}`
   );
 
-  await game.createMatch(
+  const tx = await game.createMatch(
     clf_commitmentMockup1.address,
     clf_revealMockup1.address
   );
 
+  await tx.wait(2);
+
   console.log(
-    `Match created. MATCH_ID = ${(await game.matchCounter()).toNumber() - 1}`
+    `Match started. MATCH_ID = ${(await game.matchCounter()).toNumber() - 1}`
   );
 };
 

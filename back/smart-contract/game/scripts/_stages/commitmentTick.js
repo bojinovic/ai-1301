@@ -8,4 +8,4 @@ const main = async () => {
   await game.commitmentTick(process.env.MATCH_ID, { gasLimit: 10000000 - 1 });
 };
 
-main().then(() => console.log());
+main().then(() => {});

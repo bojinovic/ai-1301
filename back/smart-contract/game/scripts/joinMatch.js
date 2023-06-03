@@ -6,12 +6,14 @@ const main = async () => {
   const { game, clf_commitmentMockup2, clf_revealMockup2 } =
     await common.attach();
 
-  await game.joinMatch(
+  const tx = await game.joinMatch(
     process.env.MATCH_ID,
     clf_commitmentMockup2.address,
     clf_revealMockup2.address,
     { gasLimit: 3000000 }
   );
+
+  await tx.wait(2);
 
   console.log(`Joined the match.`);
 };
