@@ -74,8 +74,8 @@ const attach = async () => {
     );
     const SxTF_Mockup = await ethers.getContractFactory("SxTFunctionConsumer");
 
-    const sxt_mockup = SxTF_Mockup.attach(
-      process.env.SxT_FUNCITON_CONSUMER_SC_ADDRESS
+    sxt_mockup = SxTF_Mockup.attach(
+      process.env.SXT_FUNCTION_CONSUMER_SC_ADRESS
     );
   } catch (err) {
     console.log({ err });

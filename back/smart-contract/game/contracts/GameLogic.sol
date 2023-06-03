@@ -109,6 +109,10 @@ contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
         require(success, "ERR: joinMatch Delegate call failed!");
     }
 
+
+    function testRequestRandom () public {
+        requestRandomness(100000, 3, 1);
+    }
     function fulfillRandomWords(uint256 _requestId, uint256[] memory _randomWords) internal override {
         uint matchId = seedRequestIdMatchId[_requestId];
 

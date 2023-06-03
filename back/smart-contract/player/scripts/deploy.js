@@ -6,11 +6,13 @@ async function main() {
   const [owner] = await ethers.getSigners()
 
   const FC = await ethers.getContractFactory("FunctionsConsumer")
-  const fc = await FC.deploy(networks.polygonMumbai.functionsOracleProxy)
+  let fc = await FC.deploy(networks.polygonMumbai.functionsOracleProxy)
 
-  console.log({ fc: fc.address })
+  console.log(`Commitment Function Consumer deployed at: ${fc.address}`)
+
+  fc = await FC.deploy(networks.polygonMumbai.functionsOracleProxy)
+
+  console.log(`Reveal Function Consumer deployed at: ${fc.address}`)
 }
 
-main().then(() => {
-  console.log(`Finished!`)
-})
+main().then(() => {})

@@ -5,7 +5,7 @@ const main = async () => {
 
   console.log(`Executing the commitment stage`);
 
-  await game.commitmentTick(process.env.MATCH_ID, { gasLimit: 10000000 - 1 });
+  await game.commitmentTick(process.env.MATCH_ID, { gasLimit: 3000000 - 1 });
 };
 
 main().then(() => {});

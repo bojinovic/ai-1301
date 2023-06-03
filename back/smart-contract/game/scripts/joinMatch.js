@@ -10,7 +10,7 @@ const main = async () => {
     process.env.MATCH_ID,
     clf_commitmentMockup2.address,
     clf_revealMockup2.address,
-    { gasLimit: 3000000 }
+    { gasLimit: 8000000 }
   );
 
   await tx.wait(2);

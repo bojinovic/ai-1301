@@ -1,10 +1,6 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
+
+require("dotenv").config({ path: __dirname + "/./../../../cli/.env" });
 
 async function main() {
   const Game = await hre.ethers.getContractFactory("GameLogic");
@@ -13,10 +9,14 @@ async function main() {
   await game.deployed();
 
   console.log(`Game deployed to ${game.address}`);
+
+  const tx = await game.setSxT(process.env.SXT_FUNCTION_CONSUMER_SC_ADRESS);
+
+  await tx.wait(2);
+
+  console.log(`SxT Function Consumer address set!`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

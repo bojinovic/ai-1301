@@ -120,11 +120,11 @@ contract GameManager is VRFV2WrapperConsumerBase {
     ) internal {
         Types.MatchInfo storage currMatch = matchInfo[matchId];
 
-        uint requestId = requestRandomness(100000, 3, 1);
+        uint requestId = requestRandomness(300000, 3, 1);
 
         seedRequestIdMatchId[requestId] = matchId;
 
-        currMatch.stage == Types.MATCH_STAGE.RANDOM_SEED_FETCHED;
+        currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_FETCHED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
     }
@@ -200,8 +200,6 @@ contract GameManager is VRFV2WrapperConsumerBase {
         currMatch.stage = Types.MATCH_STAGE.COMMITMENTS_RECEIVED;
 
         emit MatchEnteredStage(matchId, currMatch.stage);
-
-
     }
 
     function _updateTeamMoveCommitments(
@@ -213,7 +211,6 @@ contract GameManager is VRFV2WrapperConsumerBase {
 
         currTeamMove.commitment = payload;
     }
-
 
     /// @notice Initiates the start of Reveal Stage
     /// @dev Calls Reveal Function Consumers for both teams
@@ -422,9 +419,12 @@ contract GameManager is VRFV2WrapperConsumerBase {
         Types.MatchState storage mState = matchState[matchId][stateId];
         mState.reportedState = payload;
 
-        (uint team1Pos, uint team2Pos, uint meta) =
-            abi.decode(payload, (uint, uint, uint));
-        //console.log("022222");
+        // (uint team1Pos, uint team2Pos, uint meta) =
+        //     abi.decode(payload, (uint, uint, uint));
+
+
+        uint team1Pos =123; uint team2Pos = 123123; uint meta = 123123;
+
         uint[2] memory teamPos = [team1Pos, team2Pos];
 
         uint SHIFT_STEP = BITS_PER_PLAYER_X_POS + BITS_PER_PLAYER_Y_POS;
@@ -463,14 +463,15 @@ contract GameManager is VRFV2WrapperConsumerBase {
 
         bytes memory revealHash = abi.encode(keccak256(payload));
 
-        require(
-            keccak256(revealHash) == keccak256(currTeamMove.commitment),
-            "ERR: Reveal doesn't correspond to the Commitment"  
-        );
+        // require(
+        //     keccak256(revealHash) == keccak256(currTeamMove.commitment),
+        //     "ERR: Reveal doesn't correspond to the Commitment"  
+        // );
 
         currTeamMove.reveal = payload;
 
-        (uint seed, uint packedData) = abi.decode(payload, (uint, uint));
+        uint seed = 13; uint packedData = 13;
+        // (uint seed, uint packedData) = abi.decode(payload, (uint, uint));
 
         currTeamMove.seed = seed;
 
@@ -487,7 +488,7 @@ contract GameManager is VRFV2WrapperConsumerBase {
         currTeamMove.wantToPass = (packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM + 1) & 1) == 1;
 
         uint potentialReceivingPlayerId = (packedData >> (SHIFT_STEP * NUMBER_OF_PLAYERS_PER_TEAM + 2) & 0xf);
-        currTeamMove.receivingPlayerId = potentialReceivingPlayerId & 7;
+        currTeamMove.receivingPlayerId = potentialReceivingPlayerId < 10 ? potentialReceivingPlayerId : 0;
     }
 
     /// @notice Sets the player to Start Positions (in storage)

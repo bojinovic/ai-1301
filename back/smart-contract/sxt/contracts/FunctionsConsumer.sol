@@ -9,12 +9,14 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "./interfaces/IChainlinkFunctionConsumer.sol";
+
 /**
  * @title Functions Consumer contract
  * @notice This contract is a demonstration of using Functions.
  * @notice NOT FOR PRODUCTION USE
  */
-contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorage */{
+contract FunctionsConsumer is FunctionsClient, ConfirmedOwner, IChainlinkFunctionConsumer{
   using Functions for Functions.Request;
   using Counters for Counters.Counter;
   
@@ -55,7 +57,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorag
     string[] memory args,
     uint64 subscriptionId,
     uint32 gasLimit
-  ) public onlyOwner returns (bytes32) {
+  ) public returns (bytes32) {
     Functions.Request memory req;
     req.initializeRequest(Functions.Location.Inline, Functions.CodeLanguage.JavaScript, source);
     if (secrets.length > 0) {
@@ -79,6 +81,7 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorag
   function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
     latestResponse = response;
     latestError = err;
+    dataRead1y = true;
     emit OCRResponse(requestId, response, err);
     SxTId = abi.decode(response, (uint256));
     emit BatchMetadataUpdate(0, type(uint256).max);
@@ -101,8 +104,8 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorag
   string public _source;
   bytes public _secrets;
   string[] public _args;
-  uint64 _subId;
-  uint32 _gasLimit;
+  uint64 public _subId;
+  uint32 public _gasLimit;
 
   function setMetadata(
     string memory source,
@@ -120,18 +123,33 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner/*, ERC721URIStorag
     _gasLimit = gasLimit;
   }
 
-    function requestData () public {
+    bool public dataHasBeenRead1 = true;
+    bool public dataRead1y;
 
-      string[] memory args = new string[](2);
+    function dataHasBeenRead() public override view returns (bool) {return dataHasBeenRead1;}
+    function dataIsReady() public override view returns (bool){return dataRead1y;}
+
+    function requestData () override public {
+
+      require(dataHasBeenRead() == true, "ERR: Previous data has not been read!");
+
+      string[] memory arr = new string[](2);
       for(uint i = 0; i < _args.length; ++i){
-        args[i] = _args[i];
+        arr[i] = _args[i];
       }
       executeRequest(
-        _source,
-        _secrets,
-        args, 
-        _subId, 
-        _gasLimit);
+       _source,
+        "", 
+        arr, _subId, _gasLimit);
+    }
+
+    function copyData () public override returns (bytes memory){
+
+      require(dataIsReady() == true, "ERR: Request has not yet been fullfiled!");
+
+      dataHasBeenRead1 = true;
+
+      return latestResponse;
     }
 
 }

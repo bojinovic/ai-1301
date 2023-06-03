@@ -4,7 +4,7 @@ const main = async () => {
   const { game } = await common.attach();
 
   await game.updateRevealInfo(process.env.MATCH_ID, {
-    gasLimit: 30000000 - 1,
+    gasLimit: 1000000 - 1,
   });
 };
 

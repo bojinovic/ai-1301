@@ -77,7 +77,7 @@ contract FunctionsConsumer is FunctionsClient, IChainlinkFunctionConsumer {
 
     bytes32 assignedReqID = sendRequest(req, subscriptionId, gasLimit);
     latestRequestId = assignedReqID;
-    dataRead1y = false;
+
     return assignedReqID;
   }
 
