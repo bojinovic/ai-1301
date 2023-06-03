@@ -12,14 +12,42 @@
   text-align: center;
 }
 .MatchInfo .Meta .T .Name {
-  height: 100px;
+  height: 80px;
+  margin: 0 10px;
+  margin-top: 10px;
+  font-size: 40px;
 }
 .MatchInfo .Meta .T .Crest {
   margin: 0 auto;
-  width: 100px;
-  height: 100px;
+  width: 60px;
+  height: 80px;
+  opacity: 0.7;
 }
-.MatchInfo .Score {
+.MatchInfo .Meta .T .Crest .Rectangle {
+  background-color: red;
+}
+.MatchInfo .Meta .T .Crest .Rectangle .Img {
+  margin-top: 5px;
+  height: 50px;
+  width: 50px; /* Safari/Chrome */
+  filter: invert(100%);
+}
+.MatchInfo .Meta .T .Crest .Triangle {
+  width: 0;
+  height: 0;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  border-top: 10px solid #f00;
+}
+.MatchInfo .Meta .T .T2 .Rectangle {
+  background-color: blue;
+}
+.MatchInfo .Meta .T .T2 .Triangle {
+  border-top: 10px solid blue;
+}
+.MatchInfo .Meta .Score {
   display: flex;
   justify-content: center;
+  margin: 0 20px;
+  color: rgba(0, 0, 0, 0.8);
 }/*# sourceMappingURL=MatchInfo.css.map */

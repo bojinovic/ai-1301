@@ -1,4 +1,9 @@
+@font-face {
+  font-family: mySecondFont;
+  src: url(font1.otf);
+}
 .TeamInfo {
+  font-family: mySecondFont;
   margin: 0 10px;
 }
 .TeamInfo .Lignup {

@@ -1,7 +1,5 @@
 import * as common from "./common";
 
-const META = {};
-
 const FIELD_PADDING = 50;
 const FIELD_W = common.GAME_SCENE_DIMENSIONS.width - 2 * FIELD_PADDING;
 const FIELD_H = common.GAME_SCENE_DIMENSIONS.height - 2 * FIELD_PADDING;
@@ -24,9 +22,7 @@ export const superLoop = async (team1, team2, ball) => {
     ball.animate();
     players.forEach(async (player) => {
       const hasTheBall = false;
-      //   this.whoami == this._move.team_with_the_ball.toNumber() &&
-      //   k == this._move.player_id_with_the_ball.toNumber();
-      // if (hasTheBall) console.log(`${k} has the ball`);
+
       player.progress(hasTheBall);
     });
     players.forEach(async (player) => {

@@ -6,7 +6,12 @@ const MatchInfo = () => {
       <div className="Meta">
         <div className="T T1 T1_Color">
           <h1 className="Name">Wildcats</h1>
-          <img className="Crest" src="/images/crestPlaceholder.png"></img>
+          <div className="Crest">
+            <div className="Rectangle">
+              <img className="Img" src="/images/creast01.png"></img>
+            </div>
+            <div className="Triangle"></div>
+          </div>
         </div>
         <div className="Score">
           <h1 className="T T1">1</h1>
@@ -14,7 +19,13 @@ const MatchInfo = () => {
           <h1 className="T T2">2</h1>
         </div>
         <div className="T T2 T2_Color">
-          <img className="Crest" src="/images/crestPlaceholder.png"></img>
+          <div className="Crest T2">
+            <div className="Rectangle">
+              <img className="Img" src="/images/creast00.png"></img>
+            </div>
+            <div className="Triangle"></div>
+          </div>
+
           <h1 className="Name">Calmdogs</h1>
         </div>
       </div>

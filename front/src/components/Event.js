@@ -8,7 +8,12 @@ const Event = ({ stateManager }) => {
   if (stateManager.state.goalWasScored) {
     return (
       <div className="Event">
-        <div className="Text">GOAL WAS SCORED</div>
+        <table className="Text">
+          <tr>
+            <td>GOAL WAS SCORED</td>
+          </tr>
+        </table>
+
         <div
           className={
             currentMove().scoringTeamId == 0 ? "Subtext" : "Subtext SubtextT2"

@@ -13,8 +13,8 @@ const Playout = ({ stateManager }) => {
       <Game stateManager={stateManager}></Game>
       <MatchInfo></MatchInfo>
       <div className="TeamInfosWrapper">
-        <TeamInfo teamId={0}></TeamInfo>
-        <TeamInfo teamId={1}></TeamInfo>
+        <TeamInfo teamId={0} stateManager={stateManager}></TeamInfo>
+        <TeamInfo teamId={1} stateManager={stateManager}></TeamInfo>
       </div>
     </div>
   );

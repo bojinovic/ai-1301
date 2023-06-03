@@ -23,6 +23,9 @@
   padding: 5px 30px;
   animation: blink-animation 0.2s steps(5, start) infinite;
   -webkit-animation: blink-animation 0.2s steps(5, start) infinite;
+  width: 65%;
+  height: 200px;
+  text-align: center;
 }
 .Event .Subtext {
   position: absolute;

@@ -5,24 +5,12 @@ import { PLAYER_NAMES } from "../utils/config";
 
 import "../style/css/TeamInfo.css";
 
-const TeamInfo = ({ teamId }) => {
-  const [move, setMove] = useState(null);
-
-  useEffect(async () => {
-    while (!move) {
-      await common.delay(1000);
-      if (MATCH_INFO.history[MATCH_INFO.currMoveIdx]) {
-        setMove(MATCH_INFO.history[MATCH_INFO.currMoveIdx]);
-        break;
-      }
-    }
-
-    setInterval(() => setMove(MATCH_INFO.history[MATCH_INFO.currMoveIdx]), 500);
-  }, []);
-
-  if (!move) {
+const TeamInfo = ({ teamId, stateManager }) => {
+  if (stateManager.state.loading) {
     return <div>Loading...</div>;
   }
+
+  const move = MATCH_INFO.history[MATCH_INFO.currMoveIdx];
 
   return (
     <div className={`TeamInfo Team${teamId + 1}`}>

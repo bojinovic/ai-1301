@@ -7,7 +7,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.1); /* Black background with opacity */
+  background-color: rgba(0, 0, 0, 0.01); /* Black background with opacity */
   z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
   cursor: pointer; /* Add a pointer on hover */
   .TextWrapper {
@@ -17,7 +17,6 @@
     -webkit-animation: fadeInOut 2s linear infinite;
     animation: fadeInOut 2s linear infinite;
     .Text {
-      font-size: 50px;
       color: black;
       transform: translate(-50%, -50%);
       -ms-transform: translate(-50%, -50%);
@@ -25,12 +24,12 @@
       // background-color: rgba(0, 0, 0, 0.9);
       padding: 5px 30px;
 
-      font-size: 100px;
+      font-size: 150px;
       width: 100%;
       text-align: center;
     }
     .Spinner {
-      top: 120px;
+      top: 170px;
       position: absolute;
       display: inline-block;
       width: 80px;
@@ -44,6 +43,7 @@
       width: 16px;
       background: black;
       animation: Spinner 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+      border-radius: 10px;
     }
     .Spinner div:nth-child(1) {
       left: 8px;

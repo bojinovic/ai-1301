@@ -1,5 +1,5 @@
 export const SC_ADDRESSES = {
-  game: "0x2F94C3189edA0e357B23048aEc736F323Ac431f6",
+  game: "0x02b0B4EFd909240FCB2Eb5FAe060dC60D112E3a4",
 };
 
 export const PLAYER_NAMES = [

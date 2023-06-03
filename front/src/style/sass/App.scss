@@ -1,9 +1,29 @@
-body {
-  font-family: "Fira Sans", sans-serif;
-  font-family: "Montserrat", sans-serif;
-  margin: 0;
-  font-weight: 100;
+@font-face {
+  font-family: myFirstFont;
+  src: url(font0.otf);
+  // src: url();
 }
+
+h2 {
+  // font-family: myFirstFont;
+}
+body {
+  font-family: myFirstFont;
+  // font-family: "Perfect DOS VGA 437", "Fixedsys";
+
+  margin: 0;
+  // font-weight: 100;
+}
+
+// body {
+//   font-family: "Bitter", serif;
+//   font-family: "Fira Sans", sans-serif;
+//   font-family: "Genos", sans-serif;
+//   font-family: "Montserrat", sans-serif;
+//   font-family: "Orbitron", sans-serif;
+//   font-family: "Red Hat Display", sans-serif;
+//   font-family: "Rokkitt", serif;
+// }
 
 .T1_Color {
   color: rgba(255, 0, 0, 0.7);
