@@ -4,4 +4,4 @@ export TEAM_ID=1
 
 cd ../smart-contract/game && npx hardhat run scripts/startMatch.js --network $NETWORK
 
-cd ../../api-server/ && node index.js
+cd ../../api-server/ && nodemon index.js
