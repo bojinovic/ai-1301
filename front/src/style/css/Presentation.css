@@ -72,8 +72,6 @@
   margin: 0 auto;
 }
 .Presentation .Slide .Content3 img {
-  position: absolute;
-  margin: 0 auto;
   width: 40%;
   left: 30%;
 }
@@ -99,4 +97,20 @@
 }
 .Presentation h1 {
   text-align: center;
+}
+
+.Crest {
+  position: relative;
+  height: 400px;
+  width: 400px;
+}
+
+.Content4 {
+  width: 70%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+}
+.Content4 .Image {
+  width: 800px;
 }/*# sourceMappingURL=Presentation.css.map */

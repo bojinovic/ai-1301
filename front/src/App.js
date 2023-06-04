@@ -17,8 +17,8 @@ const App = () => {
   });
 
   useEffect(async () => {
-    await updateHistory({ updateState });
-    setInterval(async () => await updateHistory({ updateState }), 3000);
+    // await updateHistory({ updateState });
+    // setInterval(async () => await updateHistory({ updateState }), 3000);
   }, []);
 
   const updateState = (stateChange) => {
@@ -42,7 +42,7 @@ const App = () => {
     );
   }
 
-  if (state.loading) {
+  if (true) {
     return (
       <div className="App">
         <MatchIntroOverlay

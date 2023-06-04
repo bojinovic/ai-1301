@@ -8,46 +8,25 @@
       display: flex;
       flex-direction: row;
       text-align: center;
+      flex: 1;
       .Name {
         height: 80px;
-        margin: 0 10px;
+        margin: 0 5px;
         margin-top: 10px;
-        font-size: 40px;
+        font-size: 37px;
+        width: 300px;
+        text-align: center;
       }
       .Crest {
-        margin: 0 auto;
-        width: 60px;
+        width: 80px;
         height: 80px;
         // opacity: 0.7;
-        .Rectangle {
-          // background-color: red;
-
-          background-color: red;
-
-          .Img {
-            margin-top: 5px;
-            height: 50px;
-            width: 50px;
-            -webkit-filter: invert(100%); /* Safari/Chrome */
-            filter: invert(100%);
-          }
-        }
-        .Triangle {
-          width: 0;
-          height: 0;
-          border-left: 30px solid transparent;
-          border-right: 30px solid transparent;
-
-          border-top: 10px solid #f00;
+        Img {
+          width: 80px;
+          height: 80px;
         }
       }
       .T2 {
-        .Rectangle {
-          background-color: blue;
-        }
-        .Triangle {
-          border-top: 10px solid blue;
-        }
       }
     }
     .Score {

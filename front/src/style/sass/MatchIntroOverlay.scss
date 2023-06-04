@@ -9,33 +9,34 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0); /* Black background with opacity */
   z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  text-align: center;
   cursor: pointer; /* Add a pointer on hover */
   .TextWrapper {
     position: absolute;
-    top: 30%;
+    top: 50%;
     left: 50%;
     -webkit-animation: fadeInOut 2s linear infinite;
     animation: fadeInOut 2s linear infinite;
     transform: translate(-50%, -50%);
     -ms-transform: translate(-50%, -50%);
     .Text {
-      font-size: 50px;
       color: black;
 
       text-shadow: 1px;
       // background-color: rgba(0, 0, 0, 0.9);
       padding: 5px 30px;
 
-      font-size: 100px;
-      width: 100%;
+      font-size: 120px;
+      width: 80%;
       text-align: center;
+      margin: 0 auto;
     }
     .TeamWrapper {
-      left: -50%;
       display: flex;
       .Team {
-        width: 300px;
+        width: 450px;
         text-align: center;
+        font-size: 30px;
       }
     }
   }
@@ -103,4 +104,17 @@
 
   .blink {
   }
+}
+
+.T1 {
+  color: red;
+}
+.T2 {
+  color: blue;
+}
+
+img {
+  width: 400px;
+  height: 400px;
+  margin: 0 auto;
 }

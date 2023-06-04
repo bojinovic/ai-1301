@@ -71,8 +71,10 @@ const Presentation = ({ stateManager }) => {
               </li>
             </ul>
           </h3>
-          <h3 className="Content3">
+          <h3 className="Content4">
+            <img className="Crest T1" src="/images/Wildcats.png"></img>
             <img className="Image" src="/images/slide-1-img.png"></img>
+            <img className="Crest T2" src="/images/Calmdogs.png"></img>
           </h3>
         </div>
       </div>

@@ -7,23 +7,17 @@ const MatchInfo = () => {
         <div className="T T1 T1_Color">
           <h1 className="Name">Wildcats</h1>
           <div className="Crest">
-            <div className="Rectangle">
-              <img className="Img" src="/images/creast01.png"></img>
-            </div>
-            <div className="Triangle"></div>
+            <img className="Img" src="/images/Wildcats.png"></img>
           </div>
         </div>
         <div className="Score">
-          <h1 className="T T1">1</h1>
+          <h1 className="T1">1</h1>
           <h1 className="Separator">{` : `}</h1>
-          <h1 className="T T2">2</h1>
+          <h1 className="T2">2</h1>
         </div>
         <div className="T T2 T2_Color">
           <div className="Crest T2">
-            <div className="Rectangle">
-              <img className="Img" src="/images/creast00.png"></img>
-            </div>
-            <div className="Triangle"></div>
+            <img className="Img" src="/images/Calmdogs.png"></img>
           </div>
 
           <h1 className="Name">Calmdogs</h1>

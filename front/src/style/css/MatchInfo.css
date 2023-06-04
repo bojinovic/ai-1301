@@ -10,39 +10,23 @@
   display: flex;
   flex-direction: row;
   text-align: center;
+  flex: 1;
 }
 .MatchInfo .Meta .T .Name {
   height: 80px;
-  margin: 0 10px;
+  margin: 0 5px;
   margin-top: 10px;
-  font-size: 40px;
+  font-size: 37px;
+  width: 300px;
+  text-align: center;
 }
 .MatchInfo .Meta .T .Crest {
-  margin: 0 auto;
-  width: 60px;
+  width: 80px;
   height: 80px;
 }
-.MatchInfo .Meta .T .Crest .Rectangle {
-  background-color: red;
-}
-.MatchInfo .Meta .T .Crest .Rectangle .Img {
-  margin-top: 5px;
-  height: 50px;
-  width: 50px; /* Safari/Chrome */
-  filter: invert(100%);
-}
-.MatchInfo .Meta .T .Crest .Triangle {
-  width: 0;
-  height: 0;
-  border-left: 30px solid transparent;
-  border-right: 30px solid transparent;
-  border-top: 10px solid #f00;
-}
-.MatchInfo .Meta .T .T2 .Rectangle {
-  background-color: blue;
-}
-.MatchInfo .Meta .T .T2 .Triangle {
-  border-top: 10px solid blue;
+.MatchInfo .Meta .T .Crest Img {
+  width: 80px;
+  height: 80px;
 }
 .MatchInfo .Meta .Score {
   display: flex;
