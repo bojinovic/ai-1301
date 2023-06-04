@@ -1,7 +1,11 @@
 @font-face {
+  font-family: myFirstFont;
+  src: url(font0.otf);
+}
+
+@font-face {
   font-family: mySecondFont;
-  src: url(font1.otf);
-  // src: url();
+  src: url(font2.ttf);
 }
 
 .Presentation {
@@ -17,7 +21,7 @@
     }
     .SubText {
       font-family: mySecondFont;
-      font-size: 40px;
+      font-size: 35px;
     }
   }
   .Slide {
@@ -31,11 +35,12 @@
       margin-bottom: 50px;
       margin-top: 0;
     }
+
     .Content {
       font-family: mySecondFont;
-      padding: 300px 300px;
+      padding: 300px 200px;
       text-align: center;
-      font-size: 55px;
+      font-size: 35px;
       font-weight: 50;
       .Image {
         width: 60%;
@@ -44,18 +49,31 @@
     }
     .Content2 {
       font-family: mySecondFont;
-      padding: 50px 300px;
+      padding: 50px 200px;
       text-align: left;
-      font-size: 55px;
+      font-size: 35px;
       font-weight: 50;
       padding-bottom: 0;
+      display: flex;
+      .Container {
+        flex: 1;
+        img {
+          width: 50px;
+          height: 50px;
+        }
+        .Flow {
+          width: 1300px;
+          height: 700px;
+        }
+      }
     }
     .Content3 {
-      padding: 0px 300px;
+      padding: 0px 200px;
       text-align: left;
-      font-size: 55px;
+      font-size: 35px;
       font-weight: 50;
       margin: 0 auto;
+
       img {
         position: absolute;
         margin: 0 auto;
@@ -69,7 +87,24 @@
     }
 
     li {
-      font-size: 30px;
+      font-size: 35px;
+      img {
+        width: 50px;
+        height: 50px;
+      }
     }
+    .Logo {
+      font-family: myFirstFont;
+      margin: 8px 5px;
+    }
+    .Wrapper {
+      display: flex;
+    }
+    .Aim {
+      font-size: 70px;
+    }
+  }
+  h1 {
+    text-align: center;
   }
 }

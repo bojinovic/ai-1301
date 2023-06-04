@@ -1,6 +1,10 @@
 @font-face {
+  font-family: myFirstFont;
+  src: url(font0.otf);
+}
+@font-face {
   font-family: mySecondFont;
-  src: url(font1.otf);
+  src: url(font2.ttf);
 }
 .Presentation .Intro {
   text-align: center;
@@ -15,7 +19,7 @@
 }
 .Presentation .Intro .SubText {
   font-family: mySecondFont;
-  font-size: 40px;
+  font-size: 35px;
 }
 .Presentation .Slide {
   text-align: left;
@@ -31,9 +35,9 @@
 }
 .Presentation .Slide .Content {
   font-family: mySecondFont;
-  padding: 300px 300px;
+  padding: 300px 200px;
   text-align: center;
-  font-size: 55px;
+  font-size: 35px;
   font-weight: 50;
 }
 .Presentation .Slide .Content .Image {
@@ -42,16 +46,28 @@
 }
 .Presentation .Slide .Content2 {
   font-family: mySecondFont;
-  padding: 50px 300px;
+  padding: 50px 200px;
   text-align: left;
-  font-size: 55px;
+  font-size: 35px;
   font-weight: 50;
   padding-bottom: 0;
+  display: flex;
+}
+.Presentation .Slide .Content2 .Container {
+  flex: 1;
+}
+.Presentation .Slide .Content2 .Container img {
+  width: 50px;
+  height: 50px;
+}
+.Presentation .Slide .Content2 .Container .Flow {
+  width: 1300px;
+  height: 700px;
 }
 .Presentation .Slide .Content3 {
-  padding: 0px 300px;
+  padding: 0px 200px;
   text-align: left;
-  font-size: 55px;
+  font-size: 35px;
   font-weight: 50;
   margin: 0 auto;
 }
@@ -65,5 +81,22 @@
   height: 10px;
 }
 .Presentation .Slide li {
-  font-size: 30px;
+  font-size: 35px;
+}
+.Presentation .Slide li img {
+  width: 50px;
+  height: 50px;
+}
+.Presentation .Slide .Logo {
+  font-family: myFirstFont;
+  margin: 8px 5px;
+}
+.Presentation .Slide .Wrapper {
+  display: flex;
+}
+.Presentation .Slide .Aim {
+  font-size: 70px;
+}
+.Presentation h1 {
+  text-align: center;
 }/*# sourceMappingURL=Presentation.css.map */

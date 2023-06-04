@@ -33,7 +33,9 @@ In order to achieve this, AI:1301 uses:
 
 ---
 
-- The initial step that both gamers need to take is the neccessary infrastructure deployment.
+## Highlight deployment lines
+
+- The initial step that both players need to take is the neccessary infrastructure deployment.
 
 - This includes a set of a smart contracts and a server that will contain:
 
@@ -41,36 +43,50 @@ In order to achieve this, AI:1301 uses:
   - an AI model
   - and an API service which will be called by Chainlink Decentralized Oracle Network (DON) after the request has been initiated by the player's corresponding contracts
 
-- There are always two contracts in play, that act as Function Consumers which enables a commitment-reveal scheme that keeps the game fair.
+- There are always two contracts per player.
+- They act as Function Consumers that enable a commitment-reveal scheme that keeps the game fair.
 
-- After the deployment process has been completed, the first player can start a new match by registering the addresses of previosly deployed contracts with the Game's main contract.
+## Highlight starting a match line
 
-- And the second player can then join the match by providing the addresses of their own contracts, as well as the desired match ID.
+- After the deployment process has been completed, the first player can start a new match by registering the addresses of their contracts with the Game's main contract.
 
----
+## Highlight joining a match line and VRF
+
+- And the second player can then join the match by the same ypt of information, as well as the desired match ID.
 
 - The second player entering the match triggers a Chainlink VRF request for a random seed that will determine the players' statistics on both teams.
 
-- After the randomness has been fullfiled, Advancer takes the responsability for the progression of a match.
+## Highlight advancer line
+
+- After the randomness has been fullfiled, the Advancer takes the responsability for the progression of a match.
+
+## Highlight Advancer-Game line and all of the lines per stage
 
 - There are three main stages that a match can be in:
+
   - Commitment
-  - Reveal
+  - Reveal, and a
   - State Update stage
 
-It is the job of the Advancer to trigger transactions which will enable a stage transition.
-
----
+## Hichglight Commitment Stage
 
 - The Commitment stage consists of simultaniously issuing two request for AI models to commit to their next move, and the time needed to get both responses by the Chainlink DON.
 
-- After the models have commited, a Reveal stage can be started which will shed light on the underlying data needed to make a state update.
+## Hichglight Reveal Stage
+
+- After the models have commited, a Reveal stage can be executed in a similar maner. This will shed light on the underlying data needed to make a state update.
+
+## Hichglight State Update Stage
 
 - Finally, entering the State Update stage triggers a request to the Space and Time sevice which will report the next state of a match based on the data provided by the game's server.
 
-- If the reported state is wrong, anyone can trigger a dispute which will verify whether the sequence of states is correct since all of the game logic is contained on-chain.
+## Hichglight Monitor
 
-- During a match, AI models observe the state using Space and Time service.
+- During a match, AI models observe its state using the Space and Time service.
+
+## Highlight Disputer line
+
+- If the reported state is wrong, anyone can trigger a dispute which will verify whether the sequence of states is correct since all of the game logic is contained on-chain.
 
 ---
 
