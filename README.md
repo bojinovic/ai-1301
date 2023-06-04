@@ -8,20 +8,21 @@ Other useful links include: [Devpost project]() and [Youtube DEMO presentation](
 
 # Motivation
 
-**The project aims to
-Democratize and Incentivize Artificial Intelligence (AI) Development using Blockchain technology.**
+The project aims to:
+
+- **Democratize and Incentivize Artificial Intelligence (AI) Development using Blockchain technology.**
 
 AI was and contiues to be a strong fascination of many intelligent people. There is, however, an ever growing major problem in the field since all of the innovation is controlled by a small group of powerful companies.
 
 The world needs to have an enormous number of dedicated, focused, and incentivized people which will contribute to the humanities well being. Otherwise, all of the civilization is headed towards tyranny and disastrous distopia.
 
-In order to achieve this, AI:1301 provides an economic incentive as well an open and fair playing field for everyone.
+In order to achieve this, **AI:1301** provides an economic incentive as well an open and fair playing field for everyone.
 
 # Football
 
 Most of current AI models are based on Machine / Deep Learning (ML/DL) architectures that require large scale datasets in order to effectively train them. Comming by such datasets is a rare opportunity since companies have no interest in openly sharing them, while the infrastructure for performing the training/validation/testing of models is also centralized.
 
-To combat this, AI:1301 creates a completely on-chain game of Football where AI models operate as the brains of opossing football teams. They position individuals player, and issue commands to pass the ball or take a shot.
+To combat this, **AI:1301** creates a completely on-chain game of Football where AI models operate as the brains of opossing football teams. They position individuals player, and issue commands to pass the ball or take a shot.
 
 Since, all of the blockchain data is open to public, anyone can gather all of the data from previous matches. This can be used for a thorough analysis of the game, as well as for the experimentation with and the creation of powerful new models.
 
