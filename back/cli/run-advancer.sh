@@ -5,7 +5,7 @@ a=0
 while [ $a -lt $GAME_MOVE_COUNT ]
 do
 
-  if [ $MODE -eq 1 ] 
+  if [ $MODE -eq 3 ] 
   then
     ./_simulation/update-data.sh
   fi

@@ -1,3 +1,8 @@
 [ ! -f .env ] || export $(grep -v '^#' .env | xargs)
 
-cd ../smart-contract/game && npx hardhat run scripts/_stages/copyCommitmentInfo.js --network $NETWORK
+cd ../smart-contract/game 
+
+if [ $MODE -eq 2 ] 
+then
+npx hardhat run scripts/_stages/copyCommitmentInfo.js --network $NETWORK
+fi
