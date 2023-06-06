@@ -4,7 +4,7 @@
 
 This repository represents my submission for the [Chainlink Spring 2023 Hackathon](https://chain.link/hackathon).
 
-Other useful links include: [Devpost project]() and [Youtube DEMO presentation]().
+Other useful links include: [Devpost project]() and [Youtube DEMO presentation](https://www.youtube.com/watch?v=M0Hi5ealk0A&t=2s&ab_channel=Darchitect).
 
 # Motivation
 
@@ -12,23 +12,23 @@ The project aims to:
 
 - **Democratize and Incentivize Artificial Intelligence (AI) Development using Blockchain technology.**
 
-AI was and contiues to be a strong fascination of many intelligent people. There is, however, an ever growing major problem in the field since all of the innovation is controlled by a small group of powerful companies.
+Artificial Intelligence (AI) was and continues to be a strong fascination of many intelligent people. There is, however, an ever growing major problem in the field since all of the innovation is controlled by a small group of powerful companies.
 
-The world needs to have an enormous number of dedicated, focused, and incentivized people which will contribute to the humanities well being. Otherwise, all of the civilization is headed towards tyranny and disastrous distopia.
+The world needs to have an enormous number of dedicated, focused, and incentivized people which will contribute to the humanities well being.
 
-In order to achieve this, **AI:1301** provides an economic incentive as well an open and fair playing field for everyone.
+Solution is to provide an open and fair playing field as well as an economic incentive the way **AI:1301** does.
 
 # Football
 
-Most of current AI models are based on Machine / Deep Learning (ML/DL) architectures that require large scale datasets in order to effectively train them. Comming by such datasets is a rare opportunity since companies have no interest in openly sharing them, while the infrastructure for performing the training/validation/testing of models is also centralized.
+Most of current AI models are based on Machine / Deep Learning (ML/DL) architectures that require large scale datasets in order to effectively train them. Coming by such datasets is a rare opportunity since companies have no interest in openly sharing them, while the infrastructure for performing the training/validation/testing of models is also centralized.
 
-To combat this, **AI:1301** creates a completely on-chain game of Football where AI models operate as the brains of opossing football teams. They position individuals player, and issue commands to pass the ball or take a shot.
+To combat this, **AI:1301** creates a completely on-chain game of Football where AI models operate as the brains of opossing football teams. They position individuals player, and issue commands to pass the ball or take a shot at the oponnent's goal.
 
 Since, all of the blockchain data is open to public, anyone can gather all of the data from previous matches. This can be used for a thorough analysis of the game, as well as for the experimentation with and the creation of powerful new models.
 
 # Inner Workings
 
-To achive its aim, the following mechanisms are utilized:
+To achive that aim, the following mechanisms are utilized:
 
 - [**Chainlink Functions**](https://chain.link/functions)
   - enables communication with the AI models
@@ -94,6 +94,9 @@ To achive its aim, the following mechanisms are utilized:
 
 # Demo
 
+_Click on the image to see the DEMO on YouTube_
+[![Foo](/readme-assets/DEMO-link.png)](https://www.youtube.com/watch?v=M0Hi5ealk0A&ab_channel=Darchitect)
+
 # Upcoming Upgrades
 
 There is a series of upcoming upgrades to make this project even more interesting:
@@ -116,6 +119,20 @@ There is a series of upcoming upgrades to make this project even more interestin
   - Community evolution
 
 # Deployed Contracts
+
+Network: Polygon (Mumbai)
+
+- [Main Game Contract](https://mumbai.polygonscan.com/address/0x031199958Fe87cc72C55297a551DD21ED47027e0)
+
+- [SxT Function Consumer](https://mumbai.polygonscan.com/address/0x03939D9861503D3dD22350D44635a4D711A562F4)
+
+- [Player 1 Commitment Function Consumer](https://mumbai.polygonscan.com/address/0x9185BA2D7771e7bC82fef3723c010A7C3635d528)
+
+- [Player 1 Reveal Function Consumer](https://mumbai.polygonscan.com/address/0x172b30Ef292473D07fB7679f37F6520F8DFF4429)
+
+- [Player 2 Commitment Function Consumer](https://mumbai.polygonscan.com/address/0x5d649281fbBBf5287f153b72aFad8dAeF98192c6)
+
+- [Player 2 Reveal Function Consumer](https://mumbai.polygonscan.com/address/0xF3aB3685d97e3010C02e96A94eef7918d6324bF0)
 
 # Getting Started
 
@@ -183,11 +200,9 @@ Follow these sequence of steps to make a correct arrangement of all contracts' l
 - set its address (`GAME_SC_ADDRESS`) in the `../cli/.env`
 - send 0.5 LINK to this contract (used for Chainlink's VRF)
 - verify contract:
-  - `export POLYGON_MUMBAI_RPC_URL="https://polygon-mumbai-bor.publicnode.com" && export POLYGONSCAN_API_KEY="26A2Y9ARFB38U8J6B5RVCASAG2JVCVVF87" && npx hardhat verify <GAME_SC_ADDRESS> --network mumbai`
+  - `export POLYGON_MUMBAI_RPC_URL="https://polygon-mumbai-bor.publicnode.com" && export POLYGONSCAN_API_KEY=<POLYGONSCAN_API_KEY> && npx hardhat verify <GAME_SC_ADDRESS> --network mumbai`
 
 ## Other useful commands
 
 - Financing an already existing subscription:
   - `npx hardhat functions-sub-fund --subid <SUB_ID> --amount <AMOUNT> --network polygonMumbai`
-
-## Additional Information
