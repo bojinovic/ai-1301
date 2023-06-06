@@ -11,6 +11,7 @@ const abi = ethers.utils.defaultAbiCoder;
 const modelPath = process.env.AI_MODEL_PATH;
 
 export const runInference = async () => {
+  addToLog("\n");
   addToLog(`Running inference for the ./observation.json`);
 
   execSync(`${modelPath}/run-inference.sh`, { cwd: modelPath }).toString();
@@ -55,43 +56,43 @@ export const display = async () => {
   while (true) {
     console.clear();
     console.log("\n");
-    console.log("\n");
+    // console.log("\n");
     if (teamId == 1) {
       const teamLogo = `    ${process.env.TEAM1_NAME}    `;
 
-      console.log(
-        chalk.red(
-          figlet.textSync(teamLogo, {
-            font: FONT, //| | Big | Priest | Doh |Doom  | Dot Matrix | Double | Epic // Grafitti
-            width: 100,
-            whitespaceBreak: true,
-          })
-        )
-      );
+      // console.log(
+      //   chalk.red(
+      //     figlet.textSync(teamLogo, {
+      //       font: FONT, //| | Big | Priest | Doh |Doom  | Dot Matrix | Double | Epic // Grafitti
+      //       width: 100,
+      //       whitespaceBreak: true,
+      //     })
+      //   )
+      // );
       // console.log(await terminalImage.file("./images/Wildcats.png"));
     } else {
       const teamLogo = `   ${process.env.TEAM2_NAME}   `;
 
-      console.log(
-        chalk.blue(
-          figlet.textSync(teamLogo, {
-            font: FONT,
-            width: 100,
-            whitespaceBreak: true,
-          })
-        )
-      );
+      // console.log(
+      //   chalk.blue(
+      //     figlet.textSync(teamLogo, {
+      //       font: FONT,
+      //       width: 100,
+      //       whitespaceBreak: true,
+      //     })
+      //   )
+      // );
     }
-    console.log("\t\t\t\tAll Systems are operational");
-    console.log("\n");
+    console.log("\tAll Systems are operational");
+    // console.log("\n");
     await displayLogs();
     await delay(3000);
   }
 };
 
 export const displayLogs = async () => {
-  for (let i = 0; i < logs.length && i < 15; ++i) {
-    console.log(logs[Math.min(logs.length - 1, 14) - i]);
+  for (let i = 0; i < logs.length && i < 50; ++i) {
+    console.log(logs[Math.min(logs.length - 1, 49) - i]);
   }
 };
 

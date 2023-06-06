@@ -19,6 +19,9 @@ const port =
 
 let currDecision = {};
 
+let initialLogPrinted = false;
+let stage = "commitment"; // 1 - commitment, 2 - reveal
+
 app.get(`/run-inference`, async (req, res) => {
   const { decision } = await utils.runInference();
   const { commitment, reveal } = await utils.encodeInferenceDecision({
@@ -31,13 +34,30 @@ app.get(`/run-inference`, async (req, res) => {
 });
 
 app.get(`/${teamId}/get-commitment`, async (req, res) => {
-  utils.addToLog(`[HTTP GET Request] /get-commitment`);
+  if (stage == "reveal") {
+    initialLogPrinted = false;
+    stage = "commitment";
+  }
+  if (stage == "commitment" && initialLogPrinted == false) {
+    utils.addToLog("\n");
+    initialLogPrinted = true;
+  }
+  utils.addToLog(`[HTTP GET Request] Chainlink DON requested /get-commitment`);
 
   return res.json({ data: currDecision.commitment });
 });
 
 app.get(`/${teamId}/get-reveal`, async (req, res) => {
-  utils.addToLog(`[HTTP GET Request] /get-reveal`);
+  if (stage == "commitment") {
+    initialLogPrinted = false;
+    stage = "reveal";
+  }
+
+  if (stage == "reveal" && initialLogPrinted == false) {
+    utils.addToLog("\n");
+    initialLogPrinted = true;
+  }
+  utils.addToLog(`[HTTP GET Request] Chainlink DON requested /get-reveal`);
 
   return res.json({ data: currDecision.reveal });
 });
