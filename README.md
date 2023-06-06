@@ -6,7 +6,7 @@
 
 This repository represents my submission for the [Chainlink Spring 2023 Hackathon](https://chain.link/hackathon).
 
-Other useful links include: [Devpost project]() and [Youtube DEMO presentation](https://www.youtube.com/watch?v=M0Hi5ealk0A&t=2s&ab_channel=Darchitect).
+Other useful links include: [Devpost project](https://devpost.com/software/ai-1301) and [Youtube DEMO presentation](https://www.youtube.com/watch?v=M0Hi5ealk0A&t=2s&ab_channel=Darchitect).
 
 # Motivation
 
