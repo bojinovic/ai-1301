@@ -1,5 +1,13 @@
 [ ! -f .env ] || export $(grep -v '^#' .env | xargs)
 
+echo "\n"
+
+open "http://localhost:3000/"$MATCH_ID
+
+echo "\n"
+
+sleep 5
+
 a=0
 
 while [ $a -lt $GAME_MOVE_COUNT ]

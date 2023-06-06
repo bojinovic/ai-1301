@@ -5,7 +5,7 @@ cd ../smart-contract/game
 if [ $MODE -eq 1 ] 
 then
   curl $P1_API_SERVER_URL/run-inference
-  sleep 2.4
+  sleep 2
   curl $P2_API_SERVER_URL/run-inference
   sleep 2
 fi

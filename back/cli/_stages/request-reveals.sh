@@ -14,8 +14,10 @@ then
   curl $P2_API_SERVER_URL/2/get-reveal
   sleep 1
   curl $P1_API_SERVER_URL/1/get-reveal
+  echo "\n"
   curl $P1_API_SERVER_URL/1/get-reveal
   sleep 1
   curl $P2_API_SERVER_URL/2/get-reveal
   curl $P2_API_SERVER_URL/2/get-reveal
+  echo "\n"
 fi
