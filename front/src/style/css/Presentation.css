@@ -102,7 +102,7 @@
 .Crest {
   position: relative;
   height: 400px;
-  width: 400px;
+  width: 350px;
 }
 
 .Content4 {
@@ -112,5 +112,19 @@
   justify-content: space-around;
 }
 .Content4 .Image {
+  width: 800px;
+}
+
+.Content5 {
+  font-family: mySecondFont;
+  width: 70%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+}
+.Content5 .Container li {
+  font-size: 37px;
+}
+.Content5 .Image {
   width: 800px;
 }/*# sourceMappingURL=Presentation.css.map */

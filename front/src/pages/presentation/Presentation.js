@@ -7,7 +7,7 @@ const Presentation = ({ stateManager }) => {
   const [state, setState] = useState({ slide: 0 });
 
   useEffect(() => {
-    document.onkeydown = () => updateSlide(state, updateState);
+    document.onkeydown = (e) => updateSlide(e, state, updateState);
   });
 
   const updateState = (newState) => {
@@ -19,7 +19,7 @@ const Presentation = ({ stateManager }) => {
       <div className="Presentation">
         <div className="Intro">
           <h1 className="Logo">AI:1301</h1>
-          <h4 className="SubText">Chainlink 2023 Spring Hackathon</h4>
+          <h4 className="SubText">Chainlink Spring 2023 Hackathon</h4>
         </div>
       </div>
     );
@@ -72,9 +72,9 @@ const Presentation = ({ stateManager }) => {
             </ul>
           </h3>
           <h3 className="Content4">
-            <img className="Crest T1" src="/images/Wildcats.png"></img>
-            <img className="Image" src="/images/slide-1-img.png"></img>
-            <img className="Crest T2" src="/images/Calmdogs.png"></img>
+            <img className="Crest T1" src="/images/wildcat.png"></img>
+            <img className="Image" src="/images/field.png"></img>
+            <img className="Crest T2" src="/images/calmdog.png"></img>
           </h3>
         </div>
       </div>
@@ -142,7 +142,7 @@ const Presentation = ({ stateManager }) => {
       <div className="Presentation">
         <div className="Slide">
           <h2 className="Header">Upgrades</h2>
-          <h3 className="Content2">
+          <h3 className="Content5">
             <div className="Container">
               <ul>
                 <li>
@@ -241,10 +241,18 @@ const Presentation = ({ stateManager }) => {
 
 export default Presentation;
 
-const updateSlide = (state, updateState) => {
-  const nSlide =
-    state.slide + 1 < PRESENTATION_LENGTH ? state.slide + 1 : state.slide;
-  updateState({ slide: nSlide });
+const updateSlide = (e, state, updateState) => {
+  let nSlide = state.slide;
+  if (e.keyCode == "37") {
+    // left arrow
+    nSlide = state.slide - 1 > -1 ? state.slide - 1 : state.slide;
+    updateState({ slide: nSlide });
+  } else if (e.keyCode == "39") {
+    // right arrow
+    nSlide =
+      state.slide + 1 < PRESENTATION_LENGTH ? state.slide + 1 : state.slide;
+    updateState({ slide: nSlide });
+  }
 };
 
 const repeatedSlide = ({ imgSrc, undertitle }) => {
@@ -299,7 +307,7 @@ const repeatedSlide = ({ imgSrc, undertitle }) => {
                   <u>Polygon (Mumbai) blockchain</u>
                 </b>
                 <ul>
-                  <li>enables all of the above</li>
+                  <li>supports all of the above</li>
                 </ul>
               </li>
             </ul>

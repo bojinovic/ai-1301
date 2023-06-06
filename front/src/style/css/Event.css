@@ -21,8 +21,8 @@
   text-shadow: 1px;
   background-color: rgba(0, 0, 0, 0.9);
   padding: 5px 30px;
-  animation: blink-animation 0.2s steps(5, start) infinite;
-  -webkit-animation: blink-animation 0.2s steps(5, start) infinite;
+  animation: blink-animation 1s steps(40, start) infinite;
+  -webkit-animation: blink-animation 1s steps(40, start) infinite;
   width: 65%;
   height: 200px;
   text-align: center;
@@ -38,14 +38,14 @@
   text-shadow: 1px;
   background-color: rgba(255, 0, 0, 0.7);
   padding: 5px 30px;
-  animation: blink-animation 0.2s steps(5, start) infinite;
-  -webkit-animation: blink-animation 0.2s steps(5, start) infinite;
+  animation: blink-animation 1s steps(40, start) infinite;
+  -webkit-animation: blink-animation 1s steps(40, start) infinite;
 }
 .Event .SubtextT2 {
   background-color: rgba(0, 0, 255, 0.7);
 }
 @keyframes blink-animation {
   to {
-    visibility: hidden;
+    opacity: 0.1;
   }
 }/*# sourceMappingURL=Event.css.map */

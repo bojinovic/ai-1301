@@ -1,6 +1,6 @@
 import "../style/css/MatchInfo.css";
 
-const MatchInfo = () => {
+const MatchInfo = ({ stateManager }) => {
   return (
     <div className="MatchInfo">
       <div className="Meta">
@@ -11,9 +11,9 @@ const MatchInfo = () => {
           </div>
         </div>
         <div className="Score">
-          <h1 className="T1">1</h1>
+          <h1 className="T1">{stateManager.state.score[0]}</h1>
           <h1 className="Separator">{` : `}</h1>
-          <h1 className="T2">2</h1>
+          <h1 className="T2">{stateManager.state.score[1]}</h1>
         </div>
         <div className="T T2 T2_Color">
           <div className="Crest T2">

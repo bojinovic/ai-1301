@@ -3,22 +3,29 @@ import { useEffect } from "react";
 import Navbar from "./components/Navbar";
 import LoadingOverlay from "./components/LoadingOverlay";
 import MatchIntroOverlay from "./components/MatchIntroOverlay";
-import { updateHistory } from "./interactions/chainData";
+import { updateHistory, MATCH_INFO } from "./interactions/chainData";
 
 import "./style/css/App.css";
 
 import Playout from "./pages/Playout";
 
 import Presentation from "./pages/presentation/Presentation";
+
 const App = () => {
   const [state, setState] = useState({
-    loading: true,
+    move: MATCH_INFO.history[MATCH_INFO.currMoveIdx],
+    loading: MATCH_INFO.loaded == false,
     goalWasScored: false,
+    matchEnded: MATCH_INFO.ended,
+    score: MATCH_INFO.score,
+    scoringTeamId: MATCH_INFO.scoringTeamId,
+    goalTakerId: MATCH_INFO.goalTakerId,
   });
 
   useEffect(async () => {
     // await updateHistory({ updateState });
-    // setInterval(async () => await updateHistory({ updateState }), 3000);
+    MATCH_INFO.loaded = true;
+    // setInterval(async () => await updateHistory({ updateState }), 13000);
   }, []);
 
   const updateState = (stateChange) => {
@@ -42,7 +49,7 @@ const App = () => {
     );
   }
 
-  if (true) {
+  if (state.loading) {
     return (
       <div className="App">
         <MatchIntroOverlay

@@ -113,7 +113,7 @@
   position: relative;
 
   height: 400px;
-  width: 400px;
+  width: 350px;
 }
 
 .Content4 {
@@ -121,6 +121,22 @@
   margin: 0 auto;
   display: flex;
   justify-content: space-around;
+  .Image {
+    width: 800px;
+  }
+}
+
+.Content5 {
+  font-family: mySecondFont;
+  width: 70%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  .Container {
+    li {
+      font-size: 37px;
+    }
+  }
   .Image {
     width: 800px;
   }

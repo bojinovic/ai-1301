@@ -31,7 +31,7 @@ const Game = ({ stateManager }) => {
     ball = new Ball(p5, 0, 10);
   };
   const draw = async (p5) => {
-    p5.background("rgba(250, 250, 250, 1)");
+    p5.background("rgba(255, 255, 255, 1)");
 
     field.animate();
 
@@ -50,22 +50,49 @@ const Game = ({ stateManager }) => {
           MATCH_INFO.history[MATCH_INFO.currMoveIdx].ball_position[0],
           MATCH_INFO.history[MATCH_INFO.currMoveIdx].ball_position[1]
         );
+        if (MATCH_INFO.currMoveIdx >= 1000) {
+          return;
+        }
 
+        stateManager.updateState({
+          move: MATCH_INFO.history[MATCH_INFO.currMoveIdx],
+        });
         MATCH_INFO.currMoveIdx += 1;
 
         if (
           !stateManager.state.goalWasScored &&
           MATCH_INFO.history[MATCH_INFO.currMoveIdx].goalWasScored
         ) {
+          MATCH_INFO.score[
+            MATCH_INFO.history[MATCH_INFO.currMoveIdx].scoringTeamId
+          ] += 1;
+
+          if (MATCH_INFO.score[1] == 5) {
+            MATCH_INFO.ended = true;
+            console.log("NATCH EBDED");
+            setTimeout(
+              () =>
+                stateManager.updateState({
+                  matchEnded: true,
+                }),
+              5000
+            );
+          }
           setTimeout(() => {
             stateManager.updateState({
               goalWasScored: true,
+              scoringTeamId:
+                MATCH_INFO.history[MATCH_INFO.currMoveIdx].scoringTeamId,
+              goalTakerId:
+                MATCH_INFO.history[MATCH_INFO.currMoveIdx].goalTakerId,
             });
-          }, 800);
+          }, 1000);
           setTimeout(
             () =>
               stateManager.updateState({
                 goalWasScored: false,
+                scoringTeamId: null,
+                goalTakerId: null,
               }),
             10000
           );

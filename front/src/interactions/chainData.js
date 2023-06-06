@@ -5,24 +5,35 @@ import * as config from "../utils/config";
 import GAME_SC_ARTIFACT from "./artifacts/contracts/GameLogic.sol/GameLogic.json";
 
 const matchId = 0;
+const MAX_MOVES = 400;
 
-const httpProvider = new ethers.providers.JsonRpcProvider();
-const contracts = {
-  game: new ethers.Contract(
-    config.SC_ADDRESSES.game,
-    GAME_SC_ARTIFACT.abi,
-    httpProvider
-  ),
-};
+const contracts = {};
+
+// const httpProvider = new ethers.providers.JsonRpcProvider();
+// const contracts = {
+//   game: new ethers.Contract(
+//     config.SC_ADDRESSES.game,
+//     GAME_SC_ARTIFACT.abi,
+//     httpProvider
+//   ),
+// };
 
 export const currentMove = () => {
+  // _updateState({ move: MATCH_INFO.history[MATCH_INFO.currMoveIdx] });
   return MATCH_INFO.history[MATCH_INFO.currMoveIdx];
 };
 
+let _updateState;
+
 const MATCH_INFO = {
+  loaded: false,
   lastStateFetched: -1,
   currMoveIdx: 0,
   history: [],
+  score: [0, 0],
+  ended: false,
+  scoringTeamId: null,
+  goalTakerId: null,
 };
 
 const init = ({ matchIdx }) => {
@@ -31,11 +42,19 @@ const init = ({ matchIdx }) => {
 
 let goalWasScored = false;
 let fireOnce = true;
+let moveCounter = 0;
+
 const updateHistory = async ({ updateState }) => {
+  _updateState = updateState;
+  if (moveCounter > MAX_MOVES) {
+    return;
+  }
+
   const { moves } = await getCurrMove();
 
   let firstMove = true;
   if (moves && moves[0].id > MATCH_INFO.lastStateFetched) {
+    moveCounter += 1;
     moves.forEach((move, idx) => {
       if (goalWasScored && firstMove) {
         for (let i = 0; i < 3; ++i) MATCH_INFO.history.push(move);
@@ -48,6 +67,10 @@ const updateHistory = async ({ updateState }) => {
           moves[moves.length - 3].playerIdWithTheBall.toNumber();
         move.scoringTeamId =
           moves[moves.length - 3].teamIdWithTheBall.toNumber();
+        MATCH_INFO.goalTakerId = move.goalTakerId;
+        MATCH_INFO.scoringTeamId = move.scoringTeamId;
+        if (move.goalWasScored) {
+        }
       }
 
       MATCH_INFO.history.push(move);

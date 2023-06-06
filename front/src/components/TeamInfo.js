@@ -10,7 +10,11 @@ const TeamInfo = ({ teamId, stateManager }) => {
     return <div>Loading...</div>;
   }
 
-  const move = MATCH_INFO.history[MATCH_INFO.currMoveIdx];
+  const move = stateManager.state.move; //MATCH_INFO.history[MATCH_INFO.currMoveIdx];
+
+  if (move == null || move.teamState == null) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className={`TeamInfo Team${teamId + 1}`}>
@@ -30,7 +34,6 @@ const TeamInfo = ({ teamId, stateManager }) => {
             move.playerIdWithTheBall.toNumber() == idx;
 
           const playerNumber = 11 - idx;
-          console.log({ playerNumber });
           return (
             <tr className={isPlayerWithTheBall ? "PlayerWithTheBall" : ""}>
               <td>{playerNumber}</td>

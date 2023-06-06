@@ -8,7 +8,7 @@ const MatchIntroOverlay = ({ stateManager }) => {
     return (
       <div className="MatchIntroOverlay">
         <div className="TextWrapper">
-          <h1 className="Text">AI:1301</h1>
+          {/* <h1 className="Text">AI:1301</h1> */}
           <div className="TeamWrapper">
             <div className="Team T1">
               <h2>Wildcats</h2>

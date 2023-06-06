@@ -26,7 +26,7 @@ export const superLoop = async (team1, team2, ball) => {
       player.progress(hasTheBall);
     });
     players.forEach(async (player) => {
-      player.drawArrow();
+      // player.drawArrow();
     });
     players.forEach(async (player) => {
       player.drawOhr();
@@ -217,7 +217,7 @@ class Player {
     this.moving = false;
 
     this.animationCounter = 0;
-    this.ANIMATION_MAX = 10;
+    this.ANIMATION_MAX = 20;
     this.dir = false;
   }
 
@@ -267,7 +267,7 @@ class Player {
           this.dir = !this.dir;
         }
       } else {
-        this.animationCounter = Math.max(this.animationCounter - 1, 0);
+        this.animationCounter = Math.max(this.animationCounter - 0.5, 0);
         if (this.animationCounter == 0) {
           this.dir = !this.dir;
         }
