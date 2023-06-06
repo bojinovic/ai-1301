@@ -1,11 +1,15 @@
-import * as dotenv from "dotenv";
-dotenv.config();
+import * as sxtUtils from "./SxT/utils.js";
 
-// Initializing the Space and Time SDK for use.
-import SpaceAndTimeSDK from "../SxT-NodeJS-SDK/SpaceAndTimeSDK.js";
-const initSDK = SpaceAndTimeSDK.init();
+const main = async () => {
+  const insertRes = await sxtUtils.insert();
 
-// Authenticate yourself using the Space and Time SDK.
-let [tokenResponse, tokenError] = await initSDK.AuthenticateUser();
+  console.log({ insertRes, insertResBody: insertRes.body });
 
-console.log({ tokenResponse, tokenError });
+  const retrieveRes = await sxtUtils.retrieve();
+
+  console.log({ retrieveRes });
+};
+
+main().then(() => {
+  console.log(`Finished`);
+});
