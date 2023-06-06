@@ -136,8 +136,12 @@ Network: Polygon (Mumbai)
 
 # Getting Started
 
-There are multiple Hardhat.js/Express.js/React.js projects instantiated in this repository.
-Reason being that it was just easier to have a separation of concers and three different configurations. The repository is organized as such:
+**Note:** After the hackathon, there will a heavy code refactoring performed.
+
+Currently, there are multiple Hardhat.js/Express.js/React.js projects instantiated in this single repository.
+Reason being that it was just easier to have a separation of concers and three different configurations.
+
+The repository is organized as such:
 
 - `back`
   - `advancer` (Express.js project with embedded [Space and Time Javascript SDK](https://docs.spaceandtime.io/docs/javascript-sdk))
