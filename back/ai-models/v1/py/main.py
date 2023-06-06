@@ -1,7 +1,5 @@
 import json, random
 
-print('Running inference for observation: ....')
-
 seed = random.randint(0, 2**256-1)
 
 packedData = random.randint(0, 2**256-1)
@@ -15,5 +13,3 @@ with open('decision.json', 'w') as f:
             }
         )
     )
-
-print('Running inference for observation: Finished')

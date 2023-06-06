@@ -1,1 +1,11 @@
-{"seed": 12667908686633359710658050609783376493695078429952005615737960784597577034498, "packedData": 27168461355159966713852665502473671247156616998595939899847627442475718648110}
+{
+  "id": 129,
+  "t1Score": 1,
+  "t2Score": 2,
+  "teamIdWithTheBall": 0,
+  "playerIdWithTheBall": 6,
+  "t1PlayerXPos": [],
+  "t1PlayerYPos": [],
+  "t2PlayerXPos": [],
+  "t2PlayerYPos": []
+}
