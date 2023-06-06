@@ -1,3 +1,5 @@
+<base target="_blank">
+
 # Overview
 
 ![](./readme-assets/AI-1301-logo.png)
