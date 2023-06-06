@@ -9,7 +9,7 @@ import "./interfaces/IChainlinkFunctionConsumer.sol";
 
 
 // Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract GameManager is VRFV2WrapperConsumerBase {
 
@@ -112,7 +112,11 @@ contract GameManager is VRFV2WrapperConsumerBase {
 
         emit MatchEnteredStage(matchId, currMatch.stage);
 
-        _requestSeed(matchId);
+        // _requestSeed(matchId);
+
+        //TODO: uncomment requestSeed and comment this bellow
+        currMatch.seed = 583456239048953784623845230985727332537846238452309857273324347842;//1623781268742397489237894723461237886812;
+        currMatch.stage = Types.MATCH_STAGE.RANDOM_SEED_RECEIVED;
     }
 
     function _requestSeed(
@@ -325,10 +329,13 @@ contract GameManager is VRFV2WrapperConsumerBase {
     /// @dev Used when there's no reporting by SxT because costs a hell of gas :)
     /// @param matchId ID of the Match
     function stateUpdate(uint matchId) public {
+        console.log("stateUpdate called");
         Types.MatchInfo storage s_currMatch = matchInfo[matchId];
         uint stateId = matchIdToMatchStateId[matchId];
         _initStorageForMatch(matchId, stateId+1);
         Types.MatchState storage s_currMatchState = matchState[matchId][stateId+1];
+        
+        console.log("stateUpdate storage initated");
 
         require(
             s_currMatch.stage == Types.MATCH_STAGE.REVEAL_RECEIVED,
@@ -336,6 +343,8 @@ contract GameManager is VRFV2WrapperConsumerBase {
         ); 
 
         Types.ProgressionState[] memory progression = IGameLogic(logic).getProgression(matchId, stateId);
+
+        console.log("Progression passed");
 
         Types.ProgressionState memory lastProgressionState = progression[progression.length-1];
 
@@ -423,7 +432,7 @@ contract GameManager is VRFV2WrapperConsumerBase {
         //     abi.decode(payload, (uint, uint, uint));
 
 
-        uint team1Pos =123; uint team2Pos = 123123; uint meta = 123123;
+        uint team1Pos = 123; uint team2Pos = 123123; uint meta = 123123;
 
         uint[2] memory teamPos = [team1Pos, team2Pos];
 
@@ -470,8 +479,8 @@ contract GameManager is VRFV2WrapperConsumerBase {
 
         currTeamMove.reveal = payload;
 
-        uint seed = 13; uint packedData = 13;
-        // (uint seed, uint packedData) = abi.decode(payload, (uint, uint));
+        // uint seed = 13; uint packedData = 13;
+        (uint seed, uint packedData) = abi.decode(payload, (uint, uint));
 
         currTeamMove.seed = seed;
 

@@ -3,7 +3,15 @@ require("hardhat-contract-sizer");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.18",
+  solidity: {
+    version: "0.8.18",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1,
+      },
+    },
+  },
   networks: {
     hardhat: {
       mining: {
@@ -11,6 +19,7 @@ module.exports = {
           order: "fifo",
         },
       },
+      allowUnlimitedContractSize: true,
     },
     mumbai: {
       url: "https://rpc-mumbai.maticvigil.com",
@@ -23,4 +32,5 @@ module.exports = {
   mocha: {
     timeout: 100000000,
   },
+  allowUnlimitedContractSize: true,
 };

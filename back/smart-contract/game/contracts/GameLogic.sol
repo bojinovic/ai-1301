@@ -10,7 +10,7 @@ import "./interfaces/IChainlinkFunctionConsumer.sol";
 
 
 // Uncomment this line to use console.log
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
 
@@ -268,6 +268,9 @@ contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
 
             if(stepId == 0){
                 currProgressionState.teamState = initialTeamState;
+                currProgressionState.teamState[0].goalKeeperStats.skill = initialTeamState[0].goalKeeperStats.skill;
+                currProgressionState.teamState[1].goalKeeperStats.skill = initialTeamState[1].goalKeeperStats.skill;
+
                 currProgressionState.teamIdWithTheBall = matchState[matchId][stateId].teamIdWithTheBall;
                 currProgressionState.playerIdWithTheBall = matchState[matchId][stateId].playerIdWithTheBall;
                 currProgressionState.ballXPos = matchState[matchId][stateId].ballXPos;
@@ -299,8 +302,12 @@ contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
                     currProgressionState.teamState[teamId].xPos[playerId] = prevProgressionState.teamState[teamId].xPos[playerId];
                     currProgressionState.teamState[teamId].yPos[playerId] = prevProgressionState.teamState[teamId].yPos[playerId];
                 }
-            }
 
+                currProgressionState.teamState[teamId].goalKeeperStats.speed = prevProgressionState.teamState[teamId].goalKeeperStats.speed;
+                currProgressionState.teamState[teamId].goalKeeperStats.skill = prevProgressionState.teamState[teamId].goalKeeperStats.skill;
+                currProgressionState.teamState[teamId].goalKeeperStats.stamina = prevProgressionState.teamState[teamId].goalKeeperStats.stamina;
+            }
+            
             if(shortCircuit == false){
                 if(stepId < PLAYER_STEPS_PER_MOVE){
                     for(uint teamId = 0; teamId < NUMBER_OF_TEAMS; ++teamId){
@@ -354,10 +361,13 @@ contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
                 // = goalKeeperProgressionState.teamIdWithTheBall 
                 = 1 - lastProgressionStateBeforeShoot.teamIdWithTheBall;
 
+            console.log("after _shootScores call");
+
             if(finalProgressionState.goalWasScored){
                 finalProgressionState.ballXPos = FIELD_W / 2;
                 finalProgressionState.ballYPos = FIELD_H / 2;
                 finalProgressionState.playerIdWithTheBall = 2;
+                console.log("goalScored path finish");
             } else {
                 uint receivingPlayerId = 5;
                 finalProgressionState.ballXPos = 
@@ -367,6 +377,7 @@ contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
                     finalProgressionState.teamState[1 - lastProgressionStateBeforeShoot.teamIdWithTheBall]
                     .yPos[receivingPlayerId];
                 finalProgressionState.playerIdWithTheBall = receivingPlayerId;
+                console.log("goalScored oposite path finish");
             }
         }
     }
@@ -732,19 +743,20 @@ contract GameLogic is IGameLogic, VRFV2WrapperConsumerBase {
     ) internal view returns (
         bool scored
     ) {
+        console.log("_shootScores called");
         uint playerSkill = currState.teamState[currState.teamIdWithTheBall]
                                     .playerStats[currState.playerIdWithTheBall]
                                     .skill;
-
-        uint goalKeeperSkill = currState.teamState[1-currState.teamIdWithTheBall]
-                                    .goalKeeperStats
-                                    .skill;
-
-         uint totalSkill = playerSkill + goalKeeperSkill;
+        console.log("playerSkill %s", playerSkill);
+        uint goalKeeperSkill = 70;//currState.teamState[1-currState.teamIdWithTheBall]
+                                    //.goalKeeperStats
+                                    //.skill;
+        console.log("goalKeeperSkill %s", goalKeeperSkill);
+         uint totalSkill = playerSkill + goalKeeperSkill + 1;
 
         uint rnd = _getCurrSeed();
-        return true;
-        if(playerSkill < (rnd % totalSkill)){
+        console.log("_shootScores finished %s");
+        if(playerSkill > (rnd % totalSkill)){
             return true;
         } else {
             return false;
